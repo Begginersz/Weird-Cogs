@@ -15,7 +15,7 @@ class donate:
 
         #Your code will go here
         embed = discord.Embed(colour=0x00ff00)
-        embed.add_field(name=":point_right:Donate money:point_left:", value="Support")
+        embed.add_field(name=":point_right:Donate money:point_left:", value="Support", url="https://donatebot.io/checkout/567325025649033236?buyer=425991701681930260")
         embed.title = "Help support CRZA Esports"
         embed.set_footer(text="Bot by CRZA",  icon_url=icon)
         await self.bot.say(embed=embed)
