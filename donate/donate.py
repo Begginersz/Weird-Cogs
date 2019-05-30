@@ -18,6 +18,6 @@ class donate:
         embed.add_field(name=":point_right:Donate money:point_left:", value="Support")
         embed.title = "Help support CRZA Esports"
         embed.set_footer(text="Bot by CRZA",  icon_url=icon)
-        await self.bot.say(content=mention, embed=embed)
+        await self.bot.say(embed=embed)
 def setup(bot):
     bot.add_cog(donate(bot))
