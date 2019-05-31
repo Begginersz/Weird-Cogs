@@ -57,7 +57,8 @@ class donate:
                     "Colour": "Green",}
             self.save_settings()
             return self.config['Servers'][server.id]
-=
+        
+        
     @commands.command()
     async def donate(self):
         """Donate message"""
