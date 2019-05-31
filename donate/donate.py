@@ -14,7 +14,8 @@ class donate:
     def __init__(self, bot):
         self.bot = bot
         self.file_path = "data/donate/donate.json"
-        self.system = dataIO.load_json(self.file_path)
+        self.config = dataIO.load_json(self.file_path)
+        self.system = {}
 
     @commands.group(pass_context=True, no_pm=True)
     async def setdonate(self, ctx):
@@ -43,21 +44,17 @@ class donate:
         def save_system(self):
             dataIO.save_json(self.file_path, self.system)
 
-        if server.id not in self.system:
-            default = {
+    def check_server(self, server):
+        if server.id in self.system:
+            return self.system[server.id]
+        else:
+            self.system[server.id]  = {
                     "Title": "Help Support My Server",
                     "Text": ":point_right:Donate money:point_left:",
                     "Link": "https://bit.ly/1Lcouww",
                     "Colour": "Green",
                 }
-
-            self.save_system()
-            path = self.system["Servers"][server.id]
-            print("Creating default donate settings for Server: {}".format(server.name))
-            return path
-        else:
-            path = self.system["Servers"][server.id]
-            return path
+            return self.system[server.id]
 
     @commands.command()
     async def donate(self):
@@ -82,7 +79,7 @@ class donate:
 
     if not dataIO.is_valid_json(f):
         print("Adding donate.json to data/donate/")
-        dataIO.save_json(f, default)
+        dataIO.save_json(f, system)
         
 def setup(bot):
     bot.add_cog(donate(bot))
