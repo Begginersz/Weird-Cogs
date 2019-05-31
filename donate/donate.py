@@ -15,7 +15,6 @@ class donate:
         self.bot = bot
         self.file_path = "data/donate/donate.json"
         self.system = dataIO.load_json(self.file_path)
-        self.default = {}
 
     @commands.group(pass_context=True, no_pm=True)
     async def setdonate(self, ctx):
@@ -51,6 +50,15 @@ class donate:
         embed.title = "Help support CRZA Esports"
         embed.set_footer(text=credits,  icon_url=icon)
         await self.bot.say(embed=embed)
+        
+    def check_server_settings(self, server):
+        if server.id not in self.system["Servers"]:
+            default = {
+                    "Title": "Help Support My Server",
+                    "Text": ":point_right:Donate money:point_left:",
+                    "Link": "https://bit.ly/1Lcouww",
+                    "Colour": "Green",
+                },
 
     def check_folders():
         if not os.path.exists('data/donate'):
