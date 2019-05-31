@@ -31,7 +31,7 @@ class donate:
         What would you Like to change the tile of Donate to?
         (Reply in 100 seconds)"""
         cancel = ctx.prefix + "cancel"
-        settings = self.check_server_settings(ctx.massage.author.server)
+        settings = self.check_server_settings(ctx.message.author.server)
         title = await self.bot.wait_for_message(timeout=100, author=author)
         settings["Title"] = str (title.content)
         self.save_system()
@@ -53,4 +53,4 @@ class donate:
         await self.bot.say(embed=embed)
 
 def setup(bot):
-    bot.add_cog(Mycog(bot))
+    bot.add_cog(donate(bot))
