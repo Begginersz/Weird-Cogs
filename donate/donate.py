@@ -24,7 +24,7 @@ class donate:
 
     @setdonate.command(name="title", pass_context=True)
     @checks.admin_or_permissions(manage_server=True)
-    async def _title_donate(self, ctx, ):
+    async def _title_donate(self, ctx):
          """Used To change tile of donate.
           What would you Like to change the tile of Donate to?
           (Reply in 100 seconds)"""
