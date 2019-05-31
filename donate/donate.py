@@ -29,8 +29,9 @@ class donate:
         """Used To change tile of donate.
         What would you Like to change the tile of Donate to?
         (Reply in 100 seconds)"""
+        author = ctx.message.author
         cancel = ctx.prefix + "cancel"
-        settings = self.check_server_settings(ctx.message.author.server)
+        settings = self.check_server_settings(author.server)
         title = await self.bot.wait_for_message(timeout=100, author=author)
         settings["Title"] = str (title.content)
         self.save_system()
@@ -55,12 +56,12 @@ class donate:
         
     def check_server_settings(self, server):
         if server.id not in self.system["Servers"]:
-            default = {
+            default = """{
                     "Title": "Help Support My Server",
                     "Text": ":point_right:Donate money:point_left:",
                     "Link": "https://bit.ly/1Lcouww",
                     "Colour": "Green",
-                },
+                },"""
 
             self.system["Servers"][server.id] = default
             self.save_system()
