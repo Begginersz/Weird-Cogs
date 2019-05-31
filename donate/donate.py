@@ -42,7 +42,8 @@ class donate:
             
         def save_system(self):
             dataIO.save_json(self.file_path, self.system)
-            
+
+        if server.id not in self.system["Servers"]:
             default = {
                     "Title": "Help Support My Server",
                     "Text": ":point_right:Donate money:point_left:",
