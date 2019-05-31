@@ -17,8 +17,8 @@ class donate:
         self.system = dataIO.load_json(self.file_path)
 
 
-    @commands.group(name="setdonate", pass_context=True)
-    async def donate(self, ctx):
+    @commands.group(pass_context=True, no_pm=True)
+    async def setdonate(self, ctx):
         """Used To Set donate info"""
 
         if ctx.invoked_subcommand is None:
