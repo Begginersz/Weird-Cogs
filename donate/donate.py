@@ -38,7 +38,9 @@ class donate:
         await asyncio.sleep(1)
         for msg in [end]:
             await self.bot.delete_message(msg)
-
+            
+        def save_system(self):
+            dataIO.save_json(self.file_path, self.system)
 
     @commands.command()
     async def donate(self):
@@ -59,6 +61,15 @@ class donate:
                     "Link": "https://bit.ly/1Lcouww",
                     "Colour": "Green",
                 },
+
+            self.system["Servers"][server.id] = default
+            self.save_system()
+            path = self.system["Servers"][server.id]
+            print("Creating default donate settings for Server: {}".format(server.name))
+            return path
+        else:
+            path = self.system["Servers"][server.id]
+            return path
 
     def check_folders():
         if not os.path.exists('data/donate'):
