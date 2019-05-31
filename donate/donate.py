@@ -42,18 +42,7 @@ class donate:
             
         def save_system(self):
             dataIO.save_json(self.file_path, self.system)
-
-    @commands.command()
-    async def donate(self):
-        """Donate message"""
-
-        #Embed Code
-        embed = discord.Embed(colour=0x00ff00)
-        embed.add_field(name=":point_right:Donate money:point_left:", value="https://bit.ly/2EJK7sV")
-        embed.title = "Help support CRZA Esports"
-        embed.set_footer(text=credits,  icon_url=icon)
-        await self.bot.say(embed=embed)
-        
+            
     def check_server_settings(self, server):
         if server.id not in self.system["Servers"]:
             default = {
@@ -72,6 +61,17 @@ class donate:
             path = self.system["Servers"][server.id]
             return path
 
+    @commands.command()
+    async def donate(self):
+        """Donate message"""
+
+        #Embed Code
+        embed = discord.Embed(colour=0x00ff00)
+        embed.add_field(name=":point_right:Donate money:point_left:", value="https://bit.ly/2EJK7sV")
+        embed.title = "Help support CRZA Esports"
+        embed.set_footer(text=credits,  icon_url=icon)
+        await self.bot.say(embed=embed)
+        
     def check_folders():
         if not os.path.exists('data/donate'):
             print("Creating data/donate folder...")
@@ -84,7 +84,7 @@ class donate:
 
     if not dataIO.is_valid_json(f):
         print("Adding donate.json to data/donate/")
-        dataIO.save_json(f)
+        dataIO.save_json(f, default)
         
 def setup(bot):
     bot.add_cog(donate(bot))
