@@ -56,12 +56,12 @@ class donate:
         
     def check_server_settings(self, server):
         if server.id not in self.system["Servers"]:
-            default = """{
+            default = {
                     "Title": "Help Support My Server",
                     "Text": ":point_right:Donate money:point_left:",
                     "Link": "https://bit.ly/1Lcouww",
                     "Colour": "Green",
-                },"""
+                },
 
             self.system["Servers"][server.id] = default
             self.save_system()
@@ -84,7 +84,7 @@ class donate:
 
     if not dataIO.is_valid_json(f):
         print("Adding donate.json to data/donate/")
-        dataIO.save_json(f, default)
+        dataIO.save_json(f)
         
 def setup(bot):
     bot.add_cog(donate(bot))
