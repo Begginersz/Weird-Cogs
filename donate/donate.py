@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-icon="https://i.imgur.com/nWvX4v9g.png"
+icon="https://cdn3.iconfinder.com/data/icons/avatars-15/64/_Ninja-2-512.png"
 
 class donate:
     """My custom cog that does stuff!"""
