@@ -47,11 +47,17 @@ class donate:
         def save_system(self):
             dataIO.save_json(self.file_path, self.system)
 
-    def check_server(self, server):
-        if server.id in self.system:
-            return self.system[server.id]
+    def check_config(self, server):
+        if server.id in self.config['Servers']:
+            return self.config['Servers'][server.id]
         else:
-            self.system[server.id]  = {
+            self.config['Servers'][server.id] = {"Title": "Help Support My Server",
+                    "Text": ":point_right:Donate money:point_left:",
+                    "Link": "https://bit.ly/1Lcouww",
+                    "Colour": "Green",}
+            self.save_settings()
+            return self.config['Servers'][server.id]
+
                     "Title": "Help Support My Server",
                     "Text": ":point_right:Donate money:point_left:",
                     "Link": "https://bit.ly/1Lcouww",
