@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-icon="https://cdn.discordapp.com/attachments/569495909294145536/583588075498635280/images_63_1.jpeg"
+icon="https://www.google.com/url?sa=i&source=images&cd=&ved=2ahUKEwio3MH6l8XiAhUJQhoKHcstB0YQjRx6BAgBEAU&url=https%3A%2F%2Fwallpapersite.com%2Fcreative-graphics%2Firon-man-artwork-minimal-dark-background-hd-16834.html&psig=AOvVaw0xTosKvgQvPQnWo7j_xhkZ&ust=1559372102433402"
 
 class donate:
     """My custom cog that does stuff!"""
