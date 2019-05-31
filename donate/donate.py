@@ -58,6 +58,9 @@ class donate:
             self.save_settings()
             return self.config['Servers'][server.id]
         
+            def save_settings(self):
+        dataIO.save_json('data/donate/donate.json', self.config)
+
         
     @commands.command()
     async def donate(self):
