@@ -57,14 +57,7 @@ class donate:
                     "Colour": "Green",}
             self.save_settings()
             return self.config['Servers'][server.id]
-
-                    "Title": "Help Support My Server",
-                    "Text": ":point_right:Donate money:point_left:",
-                    "Link": "https://bit.ly/1Lcouww",
-                    "Colour": "Green",
-                }
-            return self.system[server.id]
-
+=
     @commands.command()
     async def donate(self):
         """Donate message"""
