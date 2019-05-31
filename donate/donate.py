@@ -64,7 +64,7 @@ class donate:
 
     if not dataIO.is_valid_json(f):
         print("Adding donate.json to data/donate/")
-        dataIO.save_json(f, system)
+        dataIO.save_json(f, default)
         
 def setup(bot):
     bot.add_cog(donate(bot))
