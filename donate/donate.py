@@ -39,7 +39,6 @@ class donate:
         await asyncio.sleep(1)
         for msg in [end]:
             await self.bot.delete_message(msg)
-        break
 
 
     @commands.command()
