@@ -1,7 +1,9 @@
+import asyncio
 import discord
 from discord.ext import commands
 from .utils import checks
 from .utils.dataIO import dataIO
+from __main__ import send_cmd_help
 
 icon="https://cdn3.iconfinder.com/data/icons/avatars-15/64/_Ninja-2-512.png"
 credits="Bot by Weirdo914"
@@ -28,9 +30,8 @@ class donate:
         """Used To change tile of donate.
         What would you Like to change the tile of Donate to?
         (Reply in 100 seconds)"""
-        author = ctx.message.author
         cancel = ctx.prefix + "cancel"
-        settings = self.check_server_settings(author.server)
+        settings = self.check_server_settings(ctx.massage.author.server)
         title = await self.bot.wait_for_message(timeout=100, author=author)
         settings["Title"] = str (title.content)
         self.save_system()
