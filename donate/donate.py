@@ -52,5 +52,19 @@ class donate:
         embed.set_footer(text=credits,  icon_url=icon)
         await self.bot.say(embed=embed)
 
+    def check_folders():
+        if not os.path.exists('data/donate'):
+            print("Creating data/donate folder...")
+            os.makedirs('data/donate')
+
+    def check_files():
+        system = {"Servers": {}}
+
+    f = "data/donate/donate.json"
+
+    if not dataIO.is_valid_json(f):
+        print("Adding donate.json to data/donate/")
+        dataIO.save_json(f, default)
+        
 def setup(bot):
     bot.add_cog(donate(bot))
