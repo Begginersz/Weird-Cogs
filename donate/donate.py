@@ -15,7 +15,7 @@ class donate:
         self.bot = bot
         self.file_path = "data/donate/donate.json"
         self.system = dataIO.load_json(self.file_path)
-
+        self.default = {}
 
     @commands.group(pass_context=True, no_pm=True)
     async def setdonate(self, ctx):
