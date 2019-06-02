@@ -79,7 +79,7 @@ class donate:
             os.makedirs('data/donate')
 
     def check_files():
-        system = {"Servers": {}}
+        default = {"Servers": {}}
 
     f = "data/donate/donate.json"
 
