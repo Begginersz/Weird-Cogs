@@ -9,7 +9,7 @@ from .utils.dataIO import dataIO
 from __main__ import send_cmd_help
 
 icon="https://cdn3.iconfinder.com/data/icons/avatars-15/64/_Ninja-2-512.png"
-credits="Bot by Weirdo914"
+credit="Bot by Weirdo914"
 
 class donate:
     """Cog to help support your server with a donate command."""
@@ -54,7 +54,7 @@ class donate:
         embed = discord.Embed(colour=0x00ff00)
         embed.add_field(name=":point_right:Donate money:point_left:", value="https://bit.ly/2EJK7sV")
         embed.title = "Help support CRZA Esports"
-        embed.set_footer(text=credits,  icon_url=icon)
+        embed.set_footer(text=credit,  icon_url=icon)
         await self.bot.say(embed=embed)
         
     def check_server_settings(self, server):
