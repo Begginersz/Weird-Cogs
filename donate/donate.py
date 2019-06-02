@@ -49,8 +49,7 @@ class donate:
     @commands.command(pass_context=True, no_pm=True)
     async def donate(self, ctx):
         """Donate message"""
-        server = ctx.message.server
-        settings = self.check_server_settings(server)
+        settings = self.check_server_settings(ctx.message.server)
         title = settings["Title"]
 
         #Embed Code
