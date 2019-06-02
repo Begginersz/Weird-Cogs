@@ -57,29 +57,29 @@ class donate:
         embed.set_footer(text=credit,  icon_url=icon)
         await self.bot.say(embed=embed)
         
-    def check_server_settings(self, server):
-        if server.id not in self.system["Servers"]:
-            default = {
-                "Title": "Help Support My Server",
-                "Text": ":point_right:Donate money:point_left:",
-                "Link": "https://bit.ly/1Lcouww",
-                "Colour": "Green"
-                }
-            self.system["Servers"][server.id] = default
-            self.save_system()
-            path = self.system["Servers"][server.id]
-            return path
-        else:
-            path = self.system["Servers"][server.id]
-            return path
+def check_server_settings(self, server):
+    if server.id not in self.system["Servers"]:
+        default = {
+            "Title": "Help Support My Server",
+            "Text": ":point_right:Donate money:point_left:",
+            "Link": "https://bit.ly/1Lcouww",
+            "Colour": "Green"
+        }
+        self.system["Servers"][server.id] = default
+        self.save_system()
+        path = self.system["Servers"][server.id]
+        return path
+    else:
+        path = self.system["Servers"][server.id]
+        return path
         
-    def check_folders():
-        if not os.path.exists('data/donate'):
-            print("Creating data/donate folder...")
-            os.makedirs('data/donate')
+def check_folders():
+    if not os.path.exists('data/donate'):
+        print("Creating data/donate folder...")
+        os.makedirs('data/donate')
 
-    def check_files():
-        default = {"Servers": {}}
+def check_files():
+    default = {"Servers": {}}
 
     f = "data/donate/donate.json"
 
