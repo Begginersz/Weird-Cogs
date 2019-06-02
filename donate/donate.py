@@ -88,4 +88,6 @@ def check_files():
         dataIO.save_json(f, default)
         
 def setup(bot):
+    check_folders()
+    check_files()
     bot.add_cog(donate(bot))
