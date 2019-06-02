@@ -46,11 +46,11 @@ class donate:
         def save_system(self):
             dataIO.save_json(self.file_path, self.system)
         
-    @commands.command()
-    async def donate(self, ):
+    @commands.command(pass_context=True, no_pm=True)
+    async def donate(self, ctx):
         """Donate message"""
-        author = message.author
-        settings = self.check_server_settings(author.server)
+        server = ctx.message.server
+        settings = self.check_server_settings(server)
         title = settings["Title"]
 
         #Embed Code
