@@ -12,13 +12,12 @@ icon="https://cdn3.iconfinder.com/data/icons/avatars-15/64/_Ninja-2-512.png"
 credits="Bot by Weirdo914"
 
 class donate:
-    """My custom cog that does stuff!"""
+    """Cog to help support your server with a donate command."""
 
     def __init__(self, bot):
         self.bot = bot
         self.file_path = "data/donate/donate.json"
-        self.config = dataIO.load_json(self.file_path)
-        self.system = {}
+        self.system = dataIO.load_json(self.file_path)
 
     @commands.group(pass_context=True, no_pm=True)
     async def setdonate(self, ctx):
@@ -46,21 +45,6 @@ class donate:
             
         def save_system(self):
             dataIO.save_json(self.file_path, self.system)
-
-    def check_config(self, server):
-        if server.id in self.config['Servers']:
-            return self.config['Servers'][server.id]
-        else:
-            self.config['Servers'][server.id] = {"Title": "Help Support My Server",
-                    "Text": ":point_right:Donate money:point_left:",
-                    "Link": "https://bit.ly/1Lcouww",
-                    "Colour": "Green",}
-            self.save_settings()
-            return self.config['Servers'][server.id]
-        
-            def save_settings(self):
-        dataIO.save_json('data/donate/donate.json', self.config)
-
         
     @commands.command()
     async def donate(self):
@@ -72,6 +56,22 @@ class donate:
         embed.title = "Help support CRZA Esports"
         embed.set_footer(text=credits,  icon_url=icon)
         await self.bot.say(embed=embed)
+        
+    def check_server_settings(self, server):
+        if server.id not in self.system["Servers"]:
+            default = {
+                "Title": "Help Support My Server",
+                "Text": ":point_right:Donate money:point_left:",
+                "Link": "https://bit.ly/1Lcouww",
+                "Colour": "Green"
+                }
+            self.system["Servers"][server.id] = default
+            self.save_system()
+            path = self.system["Servers"][server.id]
+            return path
+        else:
+            path = self.system["Servers"][server.id]
+            return path
         
     def check_folders():
         if not os.path.exists('data/donate'):
@@ -85,7 +85,7 @@ class donate:
 
     if not dataIO.is_valid_json(f):
         print("Adding donate.json to data/donate/")
-        dataIO.save_json(f, system)
+        dataIO.save_json(f, default)
         
 def setup(bot):
     bot.add_cog(donate(bot))
