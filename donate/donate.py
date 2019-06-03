@@ -1,7 +1,5 @@
 import asyncio
-import random
 import os
-import time
 import discord
 from discord.ext import commands
 from .utils import checks
@@ -42,9 +40,6 @@ class donate:
         await asyncio.sleep(1)
         for msg in [end]:
             await self.bot.delete_message(msg)
-            
-        def save_system(self):
-            dataIO.save_json(self.file_path, self.system)
         
     @commands.command(pass_context=True, no_pm=True)
     async def donate(self, ctx):
@@ -58,6 +53,9 @@ class donate:
         embed.title = title
         embed.set_footer(text=credit,  icon_url=icon)
         await self.bot.say(embed=embed)
+
+def save_system(self):
+    dataIO.save_json(self.file_path, self.system)
         
 def check_server_settings(self, server):
     if server.id not in self.system["Servers"]:
