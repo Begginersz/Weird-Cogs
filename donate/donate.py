@@ -84,7 +84,7 @@ class donate:
         settings = self.check_server_settings(ctx.message.server)
         title = settings["Title"]
         msg = settings["Text"]
-        link = settings["Link"]
+        link = settings["Link"].format(ctx.prefix)
 
         #Embed Code
         embed = discord.Embed(colour=0x00ff00)
@@ -101,7 +101,7 @@ class donate:
             default = {
                 "Title": "Help Support My Server",
                 "Text": ":point_right:Donate money:point_left:",
-                "Link": "Set the link using !setdonate link",
+                "Link": "Set the link using {}setdonate link",
                 "Colour": "Green"
             }
             self.system["Servers"][server.id] = default
