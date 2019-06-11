@@ -27,9 +27,8 @@ class donate:
     @setdonate.command(name="title", pass_context=True)
     @checks.admin_or_permissions(manage_server=True)
     async def _title_donate(self, ctx):
-        """Used To change tile of donate.
-        What would you Like to change the tile of Donate to?
-        (Reply in 100 seconds)"""
+        """Used To change tile of donate."""
+        await self.bot.say("What would you Like to change the tile of Donate to? (Reply in 100 seconds)")
         author = ctx.message.author
         cancel = ctx.prefix + "cancel"
         settings = self.check_server_settings(author.server)
