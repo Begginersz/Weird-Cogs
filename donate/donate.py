@@ -27,15 +27,43 @@ class donate:
     @setdonate.command(name="title", pass_context=True)
     @checks.admin_or_permissions(manage_server=True)
     async def _title_donate(self, ctx):
-        """Used To change tile of donate."""
-        await self.bot.say("What would you Like to change the tile of Donate to? (Reply in 100 seconds)")
+        """Used To change tile of donate message."""
+        await self.bot.say("What would you Like to change the tile of your Donate Message to? (Reply in 100 seconds.  To cancel do !cancel)")
         author = ctx.message.author
         cancel = ctx.prefix + "cancel"
         settings = self.check_server_settings(author.server)
         title = await self.bot.wait_for_message(timeout=100, author=author)
         settings["Title"] = str (title.content)
         self.save_system()
-        end = await self.bot.say("The title of Donate has been changed")
+        await self.bot.say("The title of your Donate Message has been changed")
+        await asyncio.sleep(1)
+        
+    @setdonate.command(name="text", pass_context=True)
+    @checks.admin_or_permissions(manage_server=True)
+    async def _text_donate(self, ctx):
+        """Used To change text of donate message."""
+        await self.bot.say("What would you Like to change the text in your Donate Message to? (Reply in 100 seconds. To cancel do !cancel)")
+        author = ctx.message.author
+        cancel = ctx.prefix + "cancel"
+        settings = self.check_server_settings(author.server)
+        text = await self.bot.wait_for_message(timeout=100, author=author)
+        settings["Text"] = str (text.content)
+        self.save_system()
+        await self.bot.say("The text in your Donate Message has been changed")
+        await asyncio.sleep(1)
+                
+    @setdonate.command(name="link", pass_context=True)
+    @checks.admin_or_permissions(manage_server=True)
+    async def _text_donate(self, ctx):
+        """Used To set the link in donate message."""
+        await self.bot.say("Please enter the link where your server members can donate to you. Better use a bit.ly shortened link (Reply in 100 seconds. To cancel do !cancel)")
+        author = ctx.message.author
+        cancel = ctx.prefix + "cancel"
+        settings = self.check_server_settings(author.server)
+        link = await self.bot.wait_for_message(timeout=100, author=author)
+        settings["Link"] = str (link.content)
+        self.save_system()
+        await self.bot.say("The link in your Donate Message has been changed")
         await asyncio.sleep(1)
         
     @commands.command(pass_context=True, no_pm=True)
