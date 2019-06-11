@@ -54,7 +54,7 @@ class donate:
                 
     @setdonate.command(name="link", pass_context=True)
     @checks.admin_or_permissions(manage_server=True)
-    async def _text_donate(self, ctx):
+    async def _link_donate(self, ctx):
         """Used To set the link in donate message."""
         await self.bot.say("Please enter the link where your server members can donate to you. Better use a bit.ly shortened link (Reply in 100 seconds. To cancel do !cancel)")
         author = ctx.message.author
@@ -71,10 +71,12 @@ class donate:
         """Donate message"""
         settings = self.check_server_settings(ctx.message.server)
         title = settings["Title"]
+        msg = settings["Text"]
+        link = settings["Link"]
 
         #Embed Code
         embed = discord.Embed(colour=0x00ff00)
-        embed.add_field(name=":point_right:Donate money:point_left:", value="https://bit.ly/2EJK7sV")
+        embed.add_field(name=msg, value=link)
         embed.title = title
         embed.set_footer(text=credit,  icon_url=icon)
         await self.bot.say(embed=embed)
@@ -87,7 +89,7 @@ class donate:
             default = {
                 "Title": "Help Support My Server",
                 "Text": ":point_right:Donate money:point_left:",
-                "Link": "https://bit.ly/1Lcouww",
+                "Link": "Set the link using !setdonate link",
                 "Colour": "Green"
             }
             self.system["Servers"][server.id] = default
