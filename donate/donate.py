@@ -28,7 +28,7 @@ class donate:
     @checks.admin_or_permissions(manage_server=True)
     async def _title_donate(self, ctx):
         """Used To change tile of donate message."""
-        await self.bot.say("What would you Like to change the tile of your Donate Message to? (Reply in 100 seconds.  To cancel do !cancel)")
+        await self.bot.say("What would you Like to change the tile of your Donate Message to?\n(Reply in 100 seconds.  To cancel do !cancel)")
         author = ctx.message.author
         cancel = ctx.prefix + "cancel"
         settings = self.check_server_settings(author.server)
@@ -42,7 +42,7 @@ class donate:
     @checks.admin_or_permissions(manage_server=True)
     async def _text_donate(self, ctx):
         """Used To change text of donate message."""
-        await self.bot.say("What would you Like to change the text in your Donate Message to? (Reply in 100 seconds. To cancel do !cancel)")
+        await self.bot.say("What would you Like to change the text in your Donate Message to?\n(Reply in 100 seconds. To cancel do !cancel)")
         author = ctx.message.author
         cancel = ctx.prefix + "cancel"
         settings = self.check_server_settings(author.server)
@@ -56,7 +56,7 @@ class donate:
     @checks.admin_or_permissions(manage_server=True)
     async def _link_donate(self, ctx):
         """Used To set the link in donate message."""
-        await self.bot.say("Please enter the link where your server members can donate to you. Better use a bit.ly shortened link (Reply in 100 seconds. To cancel do !cancel)")
+        await self.bot.say("Please enter the link where your server members can donate to you. Better use a bit.ly shortened link\n(Reply in 100 seconds. To cancel do !cancel)")
         author = ctx.message.author
         cancel = ctx.prefix + "cancel"
         settings = self.check_server_settings(author.server)
