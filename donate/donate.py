@@ -54,10 +54,10 @@ class donate:
         embed.set_footer(text=credit,  icon_url=icon)
         await self.bot.say(embed=embed)
 
-def save_system(self):
+    def save_system(self):
     dataIO.save_json(self.file_path, self.system)
         
-def check_server_settings(self, server):
+    def check_server_settings(self, server):
     if server.id not in self.system["Servers"]:
         default = {
             "Title": "Help Support My Server",
