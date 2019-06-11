@@ -28,41 +28,53 @@ class donate:
     @checks.admin_or_permissions(manage_server=True)
     async def _title_donate(self, ctx):
         """Used To change tile of donate message."""
-        await self.bot.say("What would you Like to change the tile of your Donate Message to?\n(Reply in 100 seconds.  To cancel do !cancel)")
+        await self.bot.say("What would you Like to change the tile of your Donate Message to?\n(Reply in 1 minute.)")
         author = ctx.message.author
         cancel = ctx.prefix + "cancel"
         settings = self.check_server_settings(author.server)
-        title = await self.bot.wait_for_message(timeout=100, author=author)
-        settings["Title"] = str (title.content)
-        self.save_system()
-        await self.bot.say("The title of your Donate Message has been changed")
-        await asyncio.sleep(1)
+        title = await self.bot.wait_for_message(timeout=60, author=author)
+        if title is None:
+            await self.bot.say("You took too long. Canceling the edit process.")
+            await asyncio.sleep(1)
+        else:
+            settings["Title"] = str (title.content)
+            self.save_system()
+            await self.bot.say("The title of your Donate Message has been changed")
+            await asyncio.sleep(1)
         
     @setdonate.command(name="text", pass_context=True)
     @checks.admin_or_permissions(manage_server=True)
     async def _text_donate(self, ctx):
         """Used To change text of donate message."""
-        await self.bot.say("What would you Like to change the text in your Donate Message to?\n(Reply in 100 seconds. To cancel do !cancel)")
+        await self.bot.say("What would you Like to change the text in your Donate Message to?\n(Reply in 2 minutes.)")
         author = ctx.message.author
         cancel = ctx.prefix + "cancel"
         settings = self.check_server_settings(author.server)
-        text = await self.bot.wait_for_message(timeout=100, author=author)
-        settings["Text"] = str (text.content)
-        self.save_system()
-        await self.bot.say("The text in your Donate Message has been changed")
-        await asyncio.sleep(1)
+        text = await self.bot.wait_for_message(timeout=120, author=author)
+        if text is None:
+            await self.bot.say("You took too long. Canceling the edit process.")
+            await asyncio.sleep(1)
+        else:
+            settings["Text"] = str (text.content)
+            self.save_system()
+            await self.bot.say("The text in your Donate Message has been changed")
+            await asyncio.sleep(1)
                 
     @setdonate.command(name="link", pass_context=True)
     @checks.admin_or_permissions(manage_server=True)
     async def _link_donate(self, ctx):
         """Used To set the link in donate message."""
-        await self.bot.say("Please enter the link where your server members can donate to you. Better use a bit.ly shortened link\n(Reply in 100 seconds. To cancel do !cancel)")
+        await self.bot.say("Please enter the link where your server members can donate to you. Better use a bit.ly shortened link\n(Reply in 1 minute.)")
         author = ctx.message.author
         cancel = ctx.prefix + "cancel"
         settings = self.check_server_settings(author.server)
-        link = await self.bot.wait_for_message(timeout=100, author=author)
-        settings["Link"] = str (link.content)
-        self.save_system()
+        link = await self.bot.wait_for_message(timeout=60, author=author)
+        if link is None:
+            await self.bot.say("You took too long. Canceling the edit process.")
+            await asyncio.sleep(1)
+        else:
+            settings["Link"] = str (link.content)
+            self.save_system()
         await self.bot.say("The link in your Donate Message has been changed")
         await asyncio.sleep(1)
         
