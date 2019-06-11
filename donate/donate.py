@@ -38,8 +38,6 @@ class donate:
         self.save_system()
         end = await self.bot.say("The title of Donate has been changed")
         await asyncio.sleep(1)
-        for msg in [end]:
-            await self.bot.delete_message(msg)
         
     @commands.command(pass_context=True, no_pm=True)
     async def donate(self, ctx):
