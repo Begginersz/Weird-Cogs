@@ -3,7 +3,7 @@ Some Weird Cogs for RedBot- v2
 
 ## Cogs
 
- * **Donate** - Add a donate command foe your mambrs to help support you
+ * **Donate** - Add a donate command for your members to help support you.
  
  ## Installation
 
