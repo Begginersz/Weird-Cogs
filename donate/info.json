@@ -1,6 +1,6 @@
 {
     "AUTHOR" : "Weirdo914",
-    "INSTALL_MSG" : "Thanks for installing donate from Weird-Cogs. To set up edit the donate.py file",
+    "INSTALL_MSG" : "Thanks for installing donate from Weird-Cogs. To setup the donate message use `!setdonate` and `!donate` to run command.",
     "NAME" : "Weird-Cogs",
     "SHORT" : "Use this to add a donate command",
     "DESCRIPTION" : "Add a donate command to your bot to help support you"
