@@ -1,7 +1,7 @@
     
 {
     "AUTHOR" : "Weirdo914",
-    "INSTALL_MSG" : "Thanks for installing donate from Weird-Cogs. Toogle using `!brawllinkset toggle`. report any bugs at https://github.com/Weirdo914/Weird-Cogs.",
+    "INSTALL_MSG" : "Thanks for installing donate from Weird-Cogs. Toogle using `!brawllinkset toggle`. Report any bugs at https://github.com/Weirdo914/Weird-Cogs.",
     "NAME" : "Weird-Cogs",
     "SHORT" : "Turn Brawl Stars Room invite links into embeds.",
     "DESCRIPTION" : "Add an option to turn Brawl Stars room invites into Embeds. Use `!brawllinkset toggle` to tun off/on."
