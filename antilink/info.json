@@ -1,6 +1,6 @@
 {
     "AUTHOR" : "Weirdo914",
-    "INSTALL_MSG" : "Thanks for installing Antilink\nNow you can block any invite link or any other link that isn't send by a mod/admin\nReport any bugs at https://github.com/Weirdo914/Weird-Cogs",
+    "INSTALL_MSG" : "Thanks for installing Antilink\nNow you can block any invite link or any other link that isn't send by a mod/admin\nReport any bugs at https://github.com/Weirdo914/Weird-Cogs .",
     "NAME" : "Antilink",
     "SHORT" : "Automaticly remove Discord invite and other links from users",
     "DESCRIPTION" : "Automaticly remove Discord invite links and other website links from users.",
