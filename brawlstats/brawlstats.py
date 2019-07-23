@@ -579,8 +579,8 @@ def check_file():
 
 def check_auth():
     c = dataIO.load_json(auth_path)
-    if 'TokenI' not in c:
-        c['TOken'] = "enter your BrawlAPI token here!"
+    if 'Token' not in c:
+        c['Token'] = "Enter your BrawlAPI token here!"
     dataIO.save_json(auth_path, c)
 
 
