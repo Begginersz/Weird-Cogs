@@ -178,17 +178,26 @@ class BrawlStats:
             if m.role == "Member":
                 mem += 1
                 if mem <= 5:
-                    info = "`" + str(m.trophies) + "` " + m.name + "\n"
+                    avid = m.avatar_id
+                    emo = self.profileemoji(avid)
+                    emoji = self.emoji(emo)
+                    info = emoji + "`" + str(m.trophies) + "` " + m.name + "\n"
                     topmem = topmem + info
             elif m.role == "Senior":
                 sen += 1
                 if sen <= 5:
-                    info = "`" + str(m.trophies) + "` " + m.name + "\n"
+                    avid = m.avatar_id
+                    emo = self.profileemoji(avid)
+                    emoji = self.emoji(emo)
+                    info = emoji + "`" + str(m.trophies) + "` " + m.name + "\n"
                     topsen = topsen + info
             else:
                 co += 1
                 if co <= 5:
-                    info = "`" + str(m.trophies) + "` " + m.name + "\n"
+                    avid = m.avatar_id
+                    emo = self.profileemoji(avid)
+                    emoji = self.emoji(emo)
+                    info = emoji + "`" + str(m.trophies) + "` " + m.name + "\n"
                     topco = topco + info
         return topmem, topsen, topco
 
@@ -261,6 +270,43 @@ class BrawlStats:
             sec = ""
         final = day + hr + minut + sec
         return str(final)
+
+    def profileemoji(self, avaid: int):
+        brawler = {
+            "3": "Shelly",
+            "4": "Colt",
+            "5": "Brock",
+            "6": "Jessie",
+            "7": "Nita",
+            "8": "Dynamike",
+            "9": "El Primo",
+            "10": "Bull",
+            "11": "Rico",
+            "12": "Barley",
+            "13": "Poco",
+            "14": "Mortis",
+            "15": "Bo",
+            "16": "Spike",
+            "17": "Crow",
+            "18": "Piper",
+            "28": "Pam",
+            "29": "Tara",
+            "34": "Darryl",
+            "35": "Penny",
+            "36": "Frank",
+            "37": "Leon",
+            "38": "Gene",
+            "39": "Carl",
+            "40": "Rosa",
+            "41": "Bibi",
+            "42": "Tick"
+        }
+        checkid = str(avaid - 28000000)
+        if checkid in brawler:
+            emoji = brawler[checkid]
+        else:
+            emoji = str(avaid)
+        return emoji
 
     @commands.group(pass_context=True, no_pm=True)
     async def bs(self, ctx):
