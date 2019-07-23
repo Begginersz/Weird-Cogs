@@ -1,0 +1,7 @@
+{
+    "AUTHOR" : "Weirdo914",
+    "INSTALL_MSG" : "Thanks for installing brawlstats from Weird-Cogs. Toogle brawlstars link embeds using `!brawllinkset toggle`. Set your token using `!bs settoken` Report any bugs at https://github.com/Weirdo914/Weird-Cogs .",
+    "NAME" : "Brawlstats",
+    "SHORT" : "A cog for your getting information from brawlstars server.",
+    "DESCRIPTION" : "Get information from brawlstars server. For eg- Your Profile, Club and Current and upcoming events information.\nWith an option to turn Brawl Stars room invites into Embeds. Use `!brawllinkset toggle` to tun off/on."
+}
