@@ -525,7 +525,7 @@ class BrawlStats:
         for num in mx:
             smx += num
         amx = round(smx/brcount)
-        stats = "{}  `Total: {}/27` | `Range: {} -> {} / {} -> {}` | `Average: {}/{}` | `Skins: {}`".format(lsemoji, brcount, lcr, hcr, lmx, hmx, acr, amx, skins)
+        stats = "{}  `Total: {}/27`|`Range: {} -> {} / {} -> {}`|`Average: {}/{}`|`Skins: {}`".format(lsemoji, brcount, lcr, hcr, lmx, hmx, acr, amx, skins)
         if brcount < 22:
             embed.add_field(name="Brawler Stats", value=stats, inline=False)
             await self.bot.say(embed=embed)
