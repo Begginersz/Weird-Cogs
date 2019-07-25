@@ -4,6 +4,9 @@ Some Weird Cogs for RedBot- v2
 ## Cogs
 
  * **Donate** - Add a donate command for your members to help support you.
+ * **Antilink** - Blocks all links sent in server with a lot of options.
+ * **Brawlstats** - Get your profile, club, brawler and many more stats from brawlstars server.
+
  
  ## Installation
 
