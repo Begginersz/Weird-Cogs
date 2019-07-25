@@ -107,7 +107,7 @@ class BrawlStats:
     def getLeagueEmoji(self, trophies):
         """Get clan war League Emoji"""
         mapLeagues = {
-            "starLeague": [10000, 90000],
+            "starLeague": [10000, 100000],
             "masterLeague": [8000, 9999],
             "crystalLeague": [6000, 7999],
             "diamondLeague": [4000, 5999],
@@ -253,7 +253,7 @@ class BrawlStats:
                 minut = "**" + str(mins) + "** minutes"
             else:
                 minut = "**" + str(mins) + "** minute"
-            if not hr == "":
+            if not day + hr == "":
                 minut = ", " + minut
         else:
             minut = ""
@@ -264,7 +264,7 @@ class BrawlStats:
                 sec = ", **" + str(secs) + "** seconds"
             else:
                 sec = ", **" + str(secs) + "** second"
-            if not minut == "":
+            if not day + hr + minut == "":
                 sec = ", " + sec
         else:
             sec = ""
@@ -376,6 +376,7 @@ class BrawlStats:
             return await self.bot.say("Error: cannot reach Brawl Stars Servers. Please try again later.")
         low, high = self.trophyrange(clandata.members)
         mem, sen, co = self.numbers(clandata.members)
+        per = round((clandata.online_members * 100)/clandata.members_count)
         topmem, topsen, topco = self.top(clandata.members)
         avgmem, avgsen, avgco = self.trophysum(clandata.members)
         embed = discord.Embed(color=0xFAA61A)
@@ -390,19 +391,19 @@ class BrawlStats:
         embed.add_field(name="Trophy Range",
                         value="{}`{}`-{}`{}`".format(self.getLeagueEmoji(low), low, self.getLeagueEmoji(high), high), inline=True)
         embed.add_field(name="President", value=await self.getClubLeader(clandata.get('members')), inline=True)
-        embed.add_field(name="Online", value="{} {:,}/{}".format(self.emoji("online"), clandata.online_members, clandata.members_count), inline=True)
+        embed.add_field(name="Online", value="{} Online Members: {:,}/{} - {}%".format(self.emoji("online"), clandata.online_members, clandata.members_count, per), inline=True)
         embed.add_field(name="Description", value=clandata.description, inline=False)
         if mem > 0:
-            embed.add_field(name="Top Members({})".format(mem), value=topmem + "Average:{}`{}`".format(self.getLeagueEmoji(avgmem), avgmem), inline=True)
+            embed.add_field(name="Top Members ({})".format(mem), value=topmem + "Average:{}`{}`".format(self.getLeagueEmoji(avgmem), avgmem), inline=True)
         if sen > 0:
-            embed.add_field(name="Top Seniors({})".format(sen), value=topsen + "Average:{}`{}`".format(self.getLeagueEmoji(avgsen), avgsen), inline=True)
-        embed.add_field(name="Top Presidents({}+1)".format(co), value=topco + "Average:{}`{}`".format(self.getLeagueEmoji(avgco), avgco), inline=True)
+            embed.add_field(name="Top Seniors ({})".format(sen), value=topsen + "Average:{}`{}`".format(self.getLeagueEmoji(avgsen), avgsen), inline=True)
+        embed.add_field(name="Top Presidents ({}+1)".format(co), value=topco + "Average:{}`{}`".format(self.getLeagueEmoji(avgco), avgco), inline=True)
         embed.set_footer(text=credits, icon_url=creditIcon)
 
         await self.bot.say(embed=embed)
 
     @bs.command(pass_context=True)
-    async def events(self, ctx):
+    async def events(self):
         """Gives List of Current and upcoming events"""
         await self.bot.type()
         image = "https://cdn.discordapp.com/avatars/517368847322447873/df58e404ffe235c686fe8008b29c2c34.png"
@@ -461,6 +462,77 @@ class BrawlStats:
         embed.set_thumbnail(url="https://i.imgur.com/WbFDHkV.png")
         embed.set_footer(text=credits, icon_url=creditIcon)
         await self.bot.say(embed=embed)
+
+    @bs.command(pass_context=True)
+    async def brawlers(self, ctx):
+        """Gives List of Your Brawlers with their rank and power"""
+        member = ctx.message.author
+        await self.bot.type()
+        try:
+            profiletag = await self.tags.getTag(member.id)
+            profiledata = self.brawl.get_player(profiletag)
+        except brawlstats.RequestError as e:
+            return await self.bot.say('```\n{}: {}\n```'.format(e.code, e.error))
+        except KeyError:
+            return await self.bot.say("You need to first save your profile using ``{}bs save #GAMETAG``".format(ctx.prefix))
+
+        brawlers = profiledata.brawlers
+        xp = self.emoji("xp")
+        star = self.emoji("Star")
+        skins = 0
+        brcount = 0
+        cr = []
+        mx = []
+        embed = discord.Embed(color=0xFAA61A)
+        embed.set_author(name="{} (#{})".format(await self.tags.formatName(profiledata.name), profiledata.tag),
+                         icon_url=profiledata.avatar_url,
+                         url="https://brawlstats.com/profile/" + profiledata.tag)
+        embed1 = discord.Embed(color=0xFAA61A)
+        for brawler in brawlers:
+            brcount += 1
+            name = brawler.name
+            namemoji = self.emoji(name)
+            if brawler.has_skin:
+                skins += 1
+                name = brawler.skin
+            power = brawler.power
+            if power == 10:
+                emoji = star
+            else:
+                emoji = xp
+            rank = brawler.rank
+            rankemoji = self.emoji("R" + str(rank))
+            currtrophies = brawler.trophies
+            cr.append(currtrophies)
+            maxtrophies = brawler.highest_trophies
+            mx.append(maxtrophies)
+            des = "{}`{}`  {}`{}/{}`".format(emoji, power, rankemoji, currtrophies, maxtrophies)
+            title = "{} {}".format(namemoji, name)
+            if brcount < 25:
+                embed.add_field(name=title, value=des, inline=True)
+            else:
+                embed1.add_field(name=title, value=des, inline=True)
+        lsemoji = self.emoji("list")
+        hcr = max(cr)
+        lcr = min(cr)
+        scr = 0
+        for num in cr:
+            scr += num
+        acr = round(scr/brcount)
+        hmx = max(mx)
+        lmx = min(mx)
+        smx = 0
+        for num in mx:
+            smx += num
+        amx = round(smx/brcount)
+        stats = "{}  `Total: {}/27` | `Range: {} -> {} / {} -> {}` | `Average: {}/{}` | `Skins: {}`".format(lsemoji, brcount, lcr, hcr, lmx, hmx, acr, amx, skins)
+        if brcount < 22:
+            embed.add_field(name="Brawler Stats", value=stats, inline=False)
+            await self.bot.say(embed=embed)
+        else:
+            embed1.add_field(name="Brawler Stats", value=stats, inline=False)
+            await self.bot.say(embed=embed)
+            await self.bot.say(embed=embed1)
 
     @bs.command(pass_context=True, no_pm=True, aliases=['bssave'])
     async def save(self, ctx, profiletag: str, member: discord.Member = None):
