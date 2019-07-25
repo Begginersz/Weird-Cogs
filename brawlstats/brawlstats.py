@@ -367,7 +367,7 @@ class BrawlStats:
         await self.bot.type()
 
         if profiledata.club is None:
-            return self.bot.say("You are are not in a club.")
+            return await self.bot.say("You are are not in a club.")
 
         clantag = profiledata.club.tag
 
@@ -535,6 +535,75 @@ class BrawlStats:
         else:
             embed1.add_field(name="Brawler Stats", value=stats, inline=False)
             await self.bot.say(embed=embed)
+            await self.bot.say(embed=embed1)
+
+    @bs.command(pass_context=True)
+    async def members(self, ctx, member: discord.Member = None):
+        """Gives List of Your Club Members"""
+
+        member = member or ctx.message.author
+
+        await self.bot.type()
+        try:
+            profiletag = await self.tags.getTag(member.id)
+            profiledata = self.brawl.get_player(profiletag)
+        except brawlstats.RequestError as e:
+            return await self.bot.say('```\n{}: {}\n```'.format(e.code, e.error))
+        except KeyError:
+            return await self.bot.say("You need to first save your profile using ``{}bs save #GAMETAG``".format(ctx.prefix))
+        await self.bot.type()
+
+        if profiledata.club is None:
+            return await self.bot.say("You are are not in a club.")
+
+        clantag = profiledata.club.tag
+
+        try:
+            clandata = self.brawl.get_club(clantag)
+        except brawlstats.RequestError:
+            return await self.bot.say("Error: cannot reach Brawl Stars Servers. Please try again later.")
+
+        members = clandata.members
+        embed = discord.Embed(color=0xFAA61A)
+        embed.set_author(name=clandata.name + " | #" + clandata.tag,
+                         icon_url=clandata.badge_url,
+                         url="https://brawlstats.com/club/" + clandata.tag)
+        em2 = False
+        if clandata.members_count > 50:
+            em2 = True
+            embed1 = discord.Embed(color=0xFAA61A)
+        count = 0
+        extra = False
+        if clandata.members_count % 2 == 1:
+            extra = True
+        for member in members:
+            count += 1
+            if count < 10:
+                sno = "**`0{}.` ".format(str(count))
+            else:
+                sno = "**`{}.` ".format(str(count))
+            trophies = member.trophies
+            tromoji = self.getLeagueEmoji(trophies)
+            name = member.name
+            role = member.role
+            con = "{}`{}` {} ({})**".format(tromoji, str(trophies), name, role)
+            if count % 2 == 1:
+                title = sno + con
+            else:
+                description = sno + con
+            if count % 2 == 0:
+                if count <= 50:
+                    embed.add_field(name=title, value=description, inline=False)
+                else:
+                    embed1.add_field(name=title, value=description, inline=False)
+            if extra:
+                if count == clandata.members_count:
+                    if count <= 50:
+                        embed.add_field(name=title, value="/n/u200b", inline=False)
+                    else:
+                        embed1.add_field(name=title, value="/n/u200b", inline=False)
+        await self.bot.say(embed=embed)
+        if em2:
             await self.bot.say(embed=embed1)
 
     @bs.command(pass_context=True, no_pm=True, aliases=['bssave'])
