@@ -351,9 +351,10 @@ class BrawlStats:
         await self.bot.say(embed=embed)
 
     @bs.command(pass_context=True)
-    async def club(self, ctx):
+    async def club(self, ctx, member: discord.Member = None):
         """View your Brawl Stars Club statistics and information"""
-        member = ctx.message.author
+
+        member = member or ctx.message.author
 
         await self.bot.type()
         try:
@@ -464,9 +465,11 @@ class BrawlStats:
         await self.bot.say(embed=embed)
 
     @bs.command(pass_context=True)
-    async def brawlers(self, ctx):
+    async def brawlers(self, ctx, member: discord.Member = None):
         """Gives List of Your Brawlers with their rank and power"""
-        member = ctx.message.author
+
+        member = member or ctx.message.author
+
         await self.bot.type()
         try:
             profiletag = await self.tags.getTag(member.id)
@@ -525,7 +528,7 @@ class BrawlStats:
         for num in mx:
             smx += num
         amx = round(smx/brcount)
-        stats = "{}  `Total: {}/27`|`Range: {} -> {} / {} -> {}`|`Average: {}/{}`|`Skins: {}`".format(lsemoji, brcount, lcr, hcr, lmx, hmx, acr, amx, skins)
+        stats = "{}  `Total: {}/27`|`Range: {}->{} / {}->{}`|`Average: {} / {}`|`Skins: {}`".format(lsemoji, brcount, lcr, hcr, lmx, hmx, acr, amx, skins)
         if brcount < 22:
             embed.add_field(name="Brawler Stats", value=stats, inline=False)
             await self.bot.say(embed=embed)
