@@ -7,6 +7,7 @@ import os
 import re
 import asyncio
 
+#most of the code from Kowlin's cog just has some upgrades.
 
 class Antilink:
     """Blocks Discord invite links from users who don't have the permission 'Manage Messages'
