@@ -137,7 +137,7 @@ class donate:
 
         # Embed Code
         embed = discord.Embed(colour=embed_color)
-        embed.add_field(name=msg, value=link)
+        embed.description= "[{}]({})".format(msg, link)
         embed.title = title
         embed.set_footer(text=credit, icon_url=icon)
         await self.bot.say(embed=embed)
