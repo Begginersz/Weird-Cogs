@@ -7,6 +7,8 @@ import os
 import asyncio
 import re
 import brawlstats
+from heapq import nlargest
+
 
 BOTCOMMANDER_ROLES = ["Mod", "admin"]
 
@@ -16,7 +18,7 @@ credits = "Cog by Weirdo914"
 
 tags_path = "data/brawlstats/tags.json"
 auth_path = "data/brawlstats/auth.json"
-
+maps_path = "data/brawlstats/maps.json"
 
 class tags:
     """Tags Management"""
@@ -93,6 +95,7 @@ class BrawlStats:
         self.bot = bot
         self.location = 'data/brawlstats/settings.json'
         self.json = dataIO.load_json(self.location)
+        self.maps = dataIO.load_json(maps_path)
         self.auth = auth(auth_path)
         self.tags = tags(tags_path)
         self.brawl = brawlstats.Client(self.auth.getToken(), is_async=False)
@@ -464,7 +467,7 @@ class BrawlStats:
         embed.set_footer(text=credits, icon_url=creditIcon)
         await self.bot.say(embed=embed)
 
-    @bs.command(pass_context=True)
+    @bs.command(pass_context=True, aliases=['brawler'])
     async def brawlers(self, ctx, member: discord.Member = None):
         """Gives List of Your Brawlers with their rank and power"""
 
@@ -515,6 +518,10 @@ class BrawlStats:
                 embed.add_field(name=title, value=des, inline=True)
             else:
                 embed1.add_field(name=title, value=des, inline=True)
+        if brcount < 25:
+            embed.set_footer(text=credits, icon_url=creditIcon)
+        else:
+            embed1.set_footer(text=credits, icon_url=creditIcon)
         lsemoji = self.emoji("list")
         hcr = max(cr)
         lcr = min(cr)
@@ -528,7 +535,7 @@ class BrawlStats:
         for num in mx:
             smx += num
         amx = round(smx/brcount)
-        stats = "{}  `Total: {}/27`|`Range: {} -> {} / {} -> {}`|`Average: {} / {}`|`Skins: {}`".format(lsemoji, brcount, lcr, hcr, lmx, hmx, acr, amx, skins)
+        stats = "{}  `Total: {}/27`|`Range: {}-> {} / {}-> {}`|`Average: {} / {}`|`Skins: {}`".format(lsemoji, brcount, lcr, hcr, lmx, hmx, acr, amx, skins)
         if brcount < 22:
             embed.add_field(name="Brawler Stats", value=stats, inline=False)
             await self.bot.say(embed=embed)
@@ -572,6 +579,9 @@ class BrawlStats:
         if clandata.members_count > 50:
             em2 = True
             embed1 = discord.Embed(color=0xFAA61A)
+            embed1.set_footer(text=credits, icon_url=creditIcon)
+        else:
+            embed.set_footer(text=credits, icon_url=creditIcon)
         count = 0
         extra = False
         if clandata.members_count % 2 == 1:
@@ -605,6 +615,122 @@ class BrawlStats:
         await self.bot.say(embed=embed)
         if em2:
             await self.bot.say(embed=embed1)
+
+    @bs.command(pass_context=True, aliases=["maps"])
+    async def map(self, ctx, *, mapname):
+        """View a Brawl Stars Map"""
+        if mapname not in self.maps:
+            notfoundembed = discord.Embed(color=0xFAA61A, description="Map `{}` could not be found.".format(mapname))
+            return await self.bot.say(embed=notfoundembed)
+        linkid = self.maps[mapname]["id"]
+        linkname = mapname.replace(" ", "-")
+        gamemode = self.maps[mapname]["mode"]
+        gamemodelink = "https://www.starlist.pro/img/gamemode/" + gamemode + ".png"
+        namelink = "https://www.starlist.pro/maps/detail/" + linkname
+        link = str("https://media.githubusercontent.com/media/Mahi-Uddin/bs-assets/master/map_images/" + str(linkid) + ".png")
+        authfield = False
+        if "author" in self.maps[mapname]:
+            author = self.maps[mapname]["author"]
+            comap = self.emoji("commap")
+            authfield = True
+        embed = discord.Embed(color=0xFAA61A)
+        embed.set_author(name=mapname,
+                         icon_url=gamemodelink,
+                         url=namelink)
+        embed.set_image(url=link)
+        if authfield:
+            embed.add_field(name=comap + " Community Map", value="By **" + author + "**", inline=False)
+        embed.set_footer(text=credits, icon_url=creditIcon)
+        await self.bot.say(embed=embed)
+
+    @bs.command(pass_context=True)
+    async def leaderboard(self, ctx):
+        await self.bot.type()
+        user = ctx.message.author
+        trosort = {}
+        troinfo = {}
+        server = user.server
+        for member in server.members:
+            try:
+                profiletag = await self.tags.getTag(member.id)
+                profiledata = self.brawl.get_player(profiletag)
+                trophies = profiledata.trophies
+                name = profiledata.name
+                trosort[member.id] = trophies
+                troinfo[member.id] = {}
+                troinfo[member.id]["name"] = name
+                troinfo[member.id]["tag"] = profiledata.tag
+            except brawlstats.RequestError as e:
+                return await self.bot.say('```\n{}: {}\n```'.format(e.code, e.error))
+            except KeyError:
+                pass
+        sername = server.name
+        serplayer = len(trosort)
+        des = ""
+        top10 = nlargest(10, trosort, key=trosort.get)
+        await self.bot.type()
+        if user.id in top10:
+            usertop = True
+        else:
+            usertop = False
+            selftro = trosort[user.id]
+            ldb = sorted(trosort.values(), reverse=True )
+            rank = ldb.index(selftro)
+            nearhigh = ldb[rank - 2:rank]
+            nearhigh.reverse()
+            nearhigh = list(dict.fromkeys(nearhigh))
+            nearhighlist = []
+            for troph in nearhigh:
+                for mm in trosort:
+                    if trosort[mm] == troph:
+                        nearhighlist.append(mm)
+            nearhighlist = nearhighlist[0:2]
+            nearhighlist.reverse()
+            nearlow = ldb[rank + 1:rank + 3]
+            nearlow = list(dict.fromkeys(nearlow))
+            nearlowlist = []
+            for troph in nearlow:
+                for mm in trosort:
+                    if trosort[mm] == troph:
+                        nearlowlist.append(mm)
+            nearlowlist = nearlowlist[0:2]
+            near = nearhighlist + [user.id] + nearlowlist
+        rno = 0
+        lnk = "https://www.starlist.pro/stats/profile/"
+        for memid in top10:
+            rno += 1
+            sno = "`0{}.` ".format(rno)
+            if rno == 10:
+                sno = "`10.` "
+            tro = trosort[memid]
+            tromoji = self.getLeagueEmoji(tro)
+            name = troinfo[memid]["name"]
+            tag = troinfo[memid]["tag"]
+            link = lnk + tag
+            memfo = sno + " {} `{}` [{}]({}) - <@{}>".format(tromoji, tro, name, link, memid)
+            if memid == user.id:
+                memfo = "**" + memfo + "**"
+            des = des + "\n" + memfo
+        embed = discord.Embed(color=0xFAA61A, title=sername + " leaderboard! ({})".format(serplayer), description=des)
+        embed.set_footer(text=credits, icon_url=creditIcon)
+        embed.set_thumbnail(url="https://www.starlist.pro/img/icon/trophy.png")
+        if not usertop:
+            rank -= 1
+            val = ""
+            for memid in near:
+                sno = "`{}.` ".format(rank)
+                rank += 1
+                tro = trosort[memid]
+                tromoji = self.getLeagueEmoji( tro )
+                name = troinfo[memid]["name"]
+                tag = troinfo[memid]["tag"]
+                link = lnk + tag
+                memfo = sno + " {} `{}` [{}]({}) - <@{}>".format(tromoji, tro, name, link, memid)
+                if memid == user.id:
+                    memfo = "**" + memfo + "**"
+                val = val + "\n" + memfo
+            embed.add_field(name="Your Position", value=val)
+        await self.bot.say(embed=embed)
 
     @bs.command(pass_context=True, no_pm=True, aliases=['bssave'])
     async def save(self, ctx, profiletag: str, member: discord.Member = None):
@@ -765,6 +891,521 @@ def check_file():
     f = 'data/brawlstats/settings.json'
     if dataIO.is_valid_json(f) is False:
         dataIO.save_json(f, {})
+
+    f = 'data/brawlstats/maps.json'
+    if dataIO.is_valid_json(f) is False:
+        maps = {
+            "Acute Angle": {
+                "author": "Milan R.",
+                "id": 1500147,
+                "mode" : "Gem-Grab"
+            },
+            "Assembly Attack" : {
+                "author" : "OwenReds",
+                "id" : 1500130,
+                "mode" : "Siege"
+            },
+            "Backyard Bowl" : {
+                "id" : 1500024,
+                "mode" : "Brawl-Ball"
+            },
+            "Bandit Stash" : {
+                "id" : 1500017,
+                "mode" : "Heist"
+            },
+            "Beach Ball" : {
+                "author" : "FeFaLah",
+                "id" : 1500143,
+                "mode" : "Brawl-Ball"
+            },
+            "Beachcombers" : {
+                "author" : "Thomas P.",
+                "id" : 1500145,
+                "mode" : "Heist"
+            },
+            "Bot Drop" : {
+                "id" : 1500097,
+                "mode" : "Siege"
+            },
+            "Bouncing Echo" : {
+                "author" : "Lewinham",
+                "id" : 1500113,
+                "mode" : "Gem-Grab"
+            },
+            "Bridge Too Far" : {
+                "author" : "Zagibulenka",
+                "id" : 1500077,
+                "mode" : "Heist"
+            },
+            "Bull Pen" : {
+                "id" : 1500085,
+                "mode" : "Bounty"
+            },
+            "Burning Sands" : {
+                "author" : "Ossama H.",
+                "id" : 1500150,
+                "mode" : "Bounty"
+            },
+            "Cactus Corridor" : {
+                "author" : "Schmedricks",
+                "id" : 1500049,
+                "mode" : "Heist"
+            },
+            "Canal Grande" : {
+                "id" : 1500084,
+                "mode" : "Bounty"
+            },
+            "Cavern Churn" : {
+                "id" : 1500033,
+                "mode" : "Showdown"
+            },
+            "Cell Division" : {
+                "author" : "Lab2point0",
+                "id" : 1500116,
+                "mode" : "Gem-Grab"
+            },
+            "Center Stage" : {
+                "author" : "Mordeus",
+                "id" : 1500132,
+                "mode" : "Brawl-Ball"
+            },
+            "Chew Out" : {
+                "author" : "OwenReds",
+                "id" : 1500120,
+                "mode" : "Big-Game"
+            },
+            "Chill Cave" : {
+                "author" : "DarkKnight",
+                "id" : 1500040,
+                "mode" : "Gem-Grab"
+            },
+            "Corner Case" : {
+                "id" : 1500078,
+                "mode" : "Heist"
+            },
+            "Cross Cut" : {
+                "id" : 1500139,
+                "mode" : "Gem-Grab"
+            },
+            "Crystal Cavern" : {
+                "id" : 1500008,
+                "mode" : "Gem-Grab"
+            },
+            "Crystal Clearing" : {
+                "id" : 1500003,
+                "mode" : "Bounty"
+            },
+            "Curveball" : {
+                "author" : "ash",
+                "id" : 1500134,
+                "mode" : "Brawl-Ball"
+            },
+            "Danger Zone" : {
+                "id" : 1500133,
+                "mode" : "Boss-Fight"
+            },
+            "Deathcap Cave" : {
+                "id" : 1500009,
+                "mode" : "Gem-Grab"
+            },
+            "Deathcap Trap" : {
+                "id" : 1500002,
+                "mode" : "Bounty"
+            },
+            "Deep Siege" : {
+                "id" : 1500091,
+                "mode" : "Gem-Grab"
+            },
+            "Diamond Dust" : {
+                "author" : "ash",
+                "id" : 1500111,
+                "mode" : "Gem-Grab"
+            },
+            "Double Swoosh" : {
+                "author" : "benci",
+                "id" : 1500115,
+                "mode" : "Gem-Grab"
+            },
+            "Double Trouble" : {
+                "id" : 1500043,
+                "mode" : "Showdown"
+            },
+            "Dry Season" : {
+                "id" : 1500088,
+                "mode" : "Bounty"
+            },
+            "Dune Drift" : {
+                "author" : "Binnyboy",
+                "id" : 1500093,
+                "mode" : "Showdown"
+            },
+            "Echo Chamber" : {
+                "author" : "Lewinham",
+                "id" : 1500041,
+                "mode" : "Gem-Grab"
+            },
+            "Erratic Blocks" : {
+                "author" : "Meme-grabbee",
+                "id" : 1500105,
+                "mode" : "Showdown"
+            },
+            "Escape Velocity" : {
+                "author" : "Mordeus",
+                "id" : 1500114,
+                "mode" : "Gem-Grab"
+            },
+            "Excel" : {
+                "id" : 1500086,
+                "mode" : "Bounty"
+            },
+            "Eye of the Storm" : {
+                "author" : "Pentagonal Cubes",
+                "id" : 1500109,
+                "mode" : "Showdown"
+            },
+            "Factory Rush" : {
+                "author" : "G.W.B.S.",
+                "id" : 1500142,
+                "mode" : "Siege"
+            },
+            "Fancy Fencing" : {
+                "author" : "Rushalisk",
+                "id" : 1500042,
+                "mode" : "Heist"
+            },
+            "Feast or Famine" : {
+                "id" : 1500016,
+                "mode" : "Showdown"
+            },
+            "Flooded Mine" : {
+                "author" : "FatBubblyDragon",
+                "id" : 1500048,
+                "mode" : "Gem-Grab"
+            },
+            "Flying Fantasies" : {
+                "author" : "Mordeus",
+                "id" : 1500123,
+                "mode" : "Showdown"
+            },
+            "Forks Out" : {
+                "author" : "Mordeus",
+                "id" : 1500047,
+                "mode" : "Heist"
+            },
+            "Four Squared" : {
+                "author" : "Electra Drake",
+                "id" : 1500112,
+                "mode" : "Gem-Grab"
+            },
+            "G.G. Corral" : {
+                "id" : 1500023,
+                "mode" : "Heist"
+            },
+            "Gift Wrap" : {
+                "id" : 1500063,
+                "mode" : "Gem-Grab"
+            },
+            "Hard Rock Mine" : {
+                "id" : 1500007,
+                "mode" : "Gem-Grab"
+            },
+            "Hideout" : {
+                "id" : 1500022,
+                "mode" : "Bounty"
+            },
+            "Holiday Chill" : {
+                "id" : 1500059,
+                "mode" : "Gem-Grab"
+            },
+            "Hot Maze" : {
+                "author" : "Tony_A9",
+                "id" : 1500055,
+                "mode" : "Showdown"
+            },
+            "Hot Point" : {
+                "author" : "Mordeus",
+                "id" : 1500103,
+                "mode" : "Showdown"
+            },
+            "Hot Potato" : {
+                "author" : "AlexEsteAdevarat",
+                "id" : 1500053,
+                "mode" : "Heist"
+            },
+            "Hunting Party" : {
+                "id" : 1500065,
+                "mode" : "Big-Game"
+            },
+            "Ice Block Rock" : {
+                "id" : 1500061,
+                "mode" : "Gem-Grab"
+            },
+            "Island Invasion" : {
+                "author" : "Rushalisk",
+                "id" : 1500045,
+                "mode" : "Showdown"
+            },
+            "Junk Park" : {
+                "author" : "OwenReds",
+                "id" : 1500127,
+                "mode" : "Siege"
+            },
+            "Kaboom Canyon" : {
+                "id" : 1500018,
+                "mode" : "Heist"
+            },
+            "Keep Safe" : {
+                "id" : 1500039,
+                "mode" : "Robo-Rumble"
+            },
+            "Layer Cake" : {
+                "author" : "OwenReds",
+                "id" : 1500087,
+                "mode" : "Bounty"
+            },
+            "Machine Zone" : {
+                "id" : 1500057,
+                "mode" : "Boss-Fight"
+            },
+            "Mecha Match" : {
+                "author" : "Mr. Lee",
+                "id" : 1500141,
+                "mode" : "Siege"
+            },
+            "Metal Scrap" : {
+                "id" : 1500067,
+                "mode" : "Boss-Fight"
+            },
+            "Minecart Madness" : {
+                "id" : 1500122,
+                "mode" : "Gem-Grab"
+            },
+            "Nuts & Bolts" : {
+                "id" : 1500099,
+                "mode" : "Siege"
+            },
+            "Outlaw Camp" : {
+                "id" : 1500006,
+                "mode" : "Bounty"
+            },
+            "Pachinko Park" : {
+                "id" : 1500027,
+                "mode" : "Robo-Rumble"
+            },
+            "Passage" : {
+                "author" : "Maxymus",
+                "id" : 1500101,
+                "mode" : "Showdown"
+            },
+            "Pinball Dreams" : {
+                "author" : "Mordeus",
+                "id" : 1500118,
+                "mode" : "Brawl-Ball"
+            },
+            "Pinhole Punt" : {
+                "id" : 1500026,
+                "mode" : "Brawl-Ball"
+            },
+            "Pit Stop" : {
+                "author" : "Lex",
+                "id" : 1500137,
+                "mode" : "Heist"
+            },
+            "Pool Party" : {
+                "id" : 1500092,
+                "mode" : "Brawl-Ball"
+            },
+            "Puddle Splash" : {
+                "author" : "Lewinham",
+                "id" : 1500052,
+                "mode" : "Brawl-Ball"
+            },
+            "River Rush" : {
+                "author" : "OwenReds",
+                "id" : 1500107,
+                "mode" : "Showdown"
+            },
+            "Robo Highway" : {
+                "author" : "Mordeus",
+                "id" : 1500131,
+                "mode" : "Siege"
+            },
+            "Rockwall Brawl" : {
+                "id" : 1500015,
+                "mode" : "Showdown"
+            },
+            "Rolling Rumble" : {
+                "id" : 1500075,
+                "mode" : "Heist"
+            },
+            "Royal Runway" : {
+                "author" : "OwenReds",
+                "id" : 1500125,
+                "mode" : "Showdown"
+            },
+            "Royal Tribute" : {
+                "author" : "DuccioCh",
+                "id" : 1500100,
+                "mode" : "Heist"
+            },
+            "Safe Zone" : {
+                "id" : 1500019,
+                "mode" : "Heist"
+            },
+            "Sandy Gems" : {
+                "author" : "GO away",
+                "id" : 1500146,
+                "mode" : "Heist"
+            },
+            "Sapphire Plains" : {
+                "id" : 1500031,
+                "mode" : "Gem-Grab"
+            },
+            "Scorched Stone" : {
+                "author" : "OwenReds",
+                "id" : 1500014,
+                "mode" : "Showdown"
+            },
+            "Shooting Star" : {
+                "id" : 1500005,
+                "mode" : "Bounty"
+            },
+            "Side Story" : {
+                "author" : "OwenReds",
+                "id" : 1500138,
+                "mode" : "Heist"
+            },
+            "Skull Creek" : {
+                "id" : 1500013,
+                "mode" : "Showdown"
+            },
+            "Snake Cavern" : {
+                "author" : "Loo K.H.",
+                "id" : 1500148,
+                "mode" : "Gem-Grab"
+            },
+            "Snake Prairie" : {
+                "id" : 1500004,
+                "mode" : "Bounty"
+            },
+            "Sneaky Fields" : {
+                "author" : "Lex",
+                "id" : 1500050,
+                "mode" : "Brawl-Ball"
+            },
+            "Snow Fort" : {
+                "id" : 1500058,
+                "mode" : "Gem-Grab"
+            },
+            "Snowball Fight" : {
+                "id" : 1500060,
+                "mode" : "Gem-Grab"
+            },
+            "Snowy Siege" : {
+                "id" : 1500062,
+                "mode" : "Gem-Grab"
+            },
+            "Some Assembly Required" : {
+                "id" : 1500098,
+                "mode" : "Siege"
+            },
+            "Sparring Match" : {
+                "author" : "Binnyboy",
+                "id" : 1500128,
+                "mode" : "Siege"
+            },
+            "Split Second" : {
+                "id" : 1500074,
+                "mode" : "Heist"
+            },
+            "Spring Trap" : {
+                "author" : "freezeemilk",
+                "id" : 1500117,
+                "mode" : "Gem-Grab"
+            },
+            "Spruce Up" : {
+                "id" : 1500064,
+                "mode" : "Gem-Grab"
+            },
+            "Steel Junction" : {
+                "id" : 1500029,
+                "mode" : "Robo-Rumble"
+            },
+            "Stock Crash" : {
+                "author" : "Frep",
+                "id" : 1500140,
+                "mode" : "Gem-Grab"
+            },
+            "Stone Fort" : {
+                "id" : 1500089,
+                "mode" : "Gem-Grab"
+            },
+            "Stormy Plains" : {
+                "id" : 1500095,
+                "mode" : "Showdown"
+            },
+            "Straight Shot" : {
+                "author" : "Binnyboy",
+                "id" : 1500129,
+                "mode" : "Siege"
+            },
+            "Sunny Soccer" : {
+                "author" : "Chief Pekka",
+                "id" : 1500144,
+                "mode" : "Brawl-Ball"
+            },
+            "Sunstroke" : {
+                "author" : "Justin W.",
+                "id" : 1500149,
+                "mode" : "Bounty"
+            },
+            "Super Stadium" : {
+                "author" : "Mordeus",
+                "id" : 1500051,
+                "mode" : "Brawl-Ball"
+            },
+            "Superstar" : {
+                "author" : "Mordeus",
+                "id" : 1500135,
+                "mode" : "Showdown"
+            },
+            "Table Flip" : {
+                "id" : 1500066,
+                "mode" : "Big-Game"
+            },
+            "Team Day" : {
+                "author" : "OwenReds",
+                "id" : 1500119,
+                "mode" : "Big-Game"
+            },
+            "Temple Ruins" : {
+                "id" : 1500000,
+                "mode" : "Bounty"
+            },
+            "Thousand Lakes" : {
+                "author" : "Mordeus",
+                "id" : 1500032,
+                "mode" : "Showdown"
+            },
+            "Triple Dribble" : {
+                "id" : 1500025,
+                "mode" : "Brawl-Ball"
+            },
+            "Twist and Shoot" : {
+                "author" : "AeroNautikks",
+                "id" : 1500076,
+                "mode" : "Heist"
+            },
+            "Undermine" : {
+                "id" : 1500090,
+                "mode" : "Gem-Grab"
+            },
+            "Vault Defenders" : {
+                "id" : 1500068,
+                "mode" : "Robo-Rumble"
+            }
+        }
+        dataIO.save_json(f, maps)
 
 
 def check_auth():
