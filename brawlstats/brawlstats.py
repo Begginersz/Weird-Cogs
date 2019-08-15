@@ -10,7 +10,7 @@ import brawlstats
 from heapq import nlargest
 
 
-BOTCOMMANDER_ROLES = ["Mod", "admin"]
+BOTCOMMANDER_ROLES = ["Mod", "Admin", "Hub Officer"]
 
 creditIcon = "https://cdn3.iconfinder.com/data/icons/avatars-15/64/_Ninja-2-512.png"
 credits = "Cog by Weirdo914"
@@ -249,7 +249,7 @@ class BrawlStats:
         else:
             hr = ""
             minrem = hrsrem
-        if minrem >= 60:
+        if minrem >= 60:#UQL0Y2CC
             secrem = minrem % 60
             mins = round((minrem - secrem)/60)
             if mins > 1:
