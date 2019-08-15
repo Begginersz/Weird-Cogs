@@ -10,7 +10,7 @@ import brawlstats
 from heapq import nlargest
 
 
-BOTCOMMANDER_ROLES = ["Mod", "admin"]
+BOTCOMMANDER_ROLES = ["Mod", "Admin", "Hub Officer"]
 
 creditIcon = "https://cdn3.iconfinder.com/data/icons/avatars-15/64/_Ninja-2-512.png"
 credits = "Cog by Weirdo914"
