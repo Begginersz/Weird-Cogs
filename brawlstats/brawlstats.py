@@ -820,7 +820,7 @@ class BrawlStats:
     @bs.group(pass_context=True, no_pm=True)
     async def set(self, ctx):
         """Setup And Manage This BS Cog."""
-        if ctx.command.qualified_name == "bs set":
+        if str(ctx.invoked_subcommand) == "bs set":
             await send_cmd_help(ctx)
 
     @set.command(pass_context=True, no_pm=True)
