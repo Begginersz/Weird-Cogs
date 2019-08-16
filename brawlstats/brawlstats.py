@@ -95,7 +95,7 @@ class auth:
         dataIO.save_json(auth_path, self.auth)
 
     def getMethod(self):
-        """Get brawlstars-api Token"""
+        """Get emoji setup method Token"""
         return int(self.auth['Emoji'])
 
     def getToken(self):
@@ -825,10 +825,10 @@ class BrawlStats:
 
     @set.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(administrator=True)
-    async def token(self, *, key):
+    async def token(self, key):
         """Input your BrawlStars API Token"""
         await self.auth.addToken(key)
-        await self.bot.say("BrawlAPI Token set")
+        await self.bot.say("BrawlAPI Token set -\n" + key)
 
     @set.command(name="emoji", pass_context=True, no_pm=True)
     @checks.mod_or_permissions(administrator=True)
