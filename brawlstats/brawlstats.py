@@ -7,10 +7,9 @@ import os
 import asyncio
 import re
 import brawlstats
+import time
 from heapq import nlargest
 
-
-BOTCOMMANDER_ROLES = ["Mod", "admin"]
 
 creditIcon = "https://cdn3.iconfinder.com/data/icons/avatars-15/64/_Ninja-2-512.png"
 credits = "Cog by Weirdo914"
@@ -19,6 +18,7 @@ credits = "Cog by Weirdo914"
 tags_path = "data/brawlstats/tags.json"
 auth_path = "data/brawlstats/auth.json"
 maps_path = "data/brawlstats/maps.json"
+
 
 class tags:
     """Tags Management"""
@@ -83,6 +83,21 @@ class auth:
         self.auth['Token'] = key
         dataIO.save_json(auth_path, self.auth)
 
+    async def Emojiset(self, method: int):
+        """Add Emoji Verfication method"""
+        self.auth['Emoji'] = method
+        dataIO.save_json(auth_path, self.auth)
+
+    async def Servset(self, no: int, server_id: int):
+        """Add Emoji Servers method"""
+        n = "s" + str(no)
+        self.auth[n] = server_id
+        dataIO.save_json(auth_path, self.auth)
+
+    def getMethod(self):
+        """Get brawlstars-api Token"""
+        return int(self.auth['Emoji'])
+
     def getToken(self):
         """Get brawlstars-api Token"""
         return self.auth['Token']
@@ -98,12 +113,15 @@ class BrawlStats:
         self.maps = dataIO.load_json(maps_path)
         self.auth = auth(auth_path)
         self.tags = tags(tags_path)
+        self.ldb = dataIO.load_json("data/brawlstats/ldb.json")
         self.brawl = brawlstats.Client(self.auth.getToken(), is_async=False)
 
     def emoji(self, name):
         """Emoji by name."""
         for emoji in self.bot.get_all_emojis():
             if emoji.name == name.replace(" ", "").replace("-", "").replace(".", ""):
+                if emoji.id == "602540846922858537":
+                    return "<a:endtime:602540846922858537>"
                 return '<:{}:{}>'.format(emoji.name, emoji.id)
         return ''
 
@@ -311,6 +329,12 @@ class BrawlStats:
             emoji = str(avaid)
         return emoji
 
+    @commands.command(pass_context=True)
+    async def emcheck(self, ctx, emoji: str):
+        await self.bot.say("hi")
+        emo = self.emoji(emoji)
+        await self.bot.say(emo)
+
     @commands.group(pass_context=True, no_pm=True)
     async def bs(self, ctx):
         """Brawl Stars Commands"""
@@ -327,6 +351,7 @@ class BrawlStats:
         try:
             profiletag = await self.tags.getTag(member.id)
             profiledata = self.brawl.get_player(profiletag)
+            await self.update_profile_withdata(member, profiledata)
         except brawlstats.RequestError as e:
             return await self.bot.say('```\n{}: {}\n```'.format(e.code, e.error))
         except KeyError:
@@ -363,6 +388,7 @@ class BrawlStats:
         try:
             profiletag = await self.tags.getTag(member.id)
             profiledata = self.brawl.get_player(profiletag)
+            await self.update_profile_withdata(member, profiledata)
         except brawlstats.RequestError as e:
             return await self.bot.say('```\n{}: {}\n```'.format(e.code, e.error))
         except KeyError:
@@ -415,7 +441,7 @@ class BrawlStats:
             events = self.brawl.get_events()
         except brawlstats.RequestError:
             return await self.bot.say("Error: cannot reach Brawl Stars Servers. Please try again later.")
-        finemoji = "<a:endtime:602540846922858537>"
+        finemoji = self.emoji("endtime")
         currentevents = events.current
         upcomingevents = events.upcoming
         spcl = False
@@ -477,6 +503,7 @@ class BrawlStats:
         try:
             profiletag = await self.tags.getTag(member.id)
             profiledata = self.brawl.get_player(profiletag)
+            await self.update_profile_withdata(member, profiledata)
         except brawlstats.RequestError as e:
             return await self.bot.say('```\n{}: {}\n```'.format(e.code, e.error))
         except KeyError:
@@ -554,6 +581,7 @@ class BrawlStats:
         try:
             profiletag = await self.tags.getTag(member.id)
             profiledata = self.brawl.get_player(profiletag)
+            await self.update_profile_withdata(member, profiledata)
         except brawlstats.RequestError as e:
             return await self.bot.say('```\n{}: {}\n```'.format(e.code, e.error))
         except KeyError:
@@ -645,6 +673,7 @@ class BrawlStats:
 
     @bs.command(pass_context=True)
     async def leaderboard(self, ctx):
+        """Shows server leaderboard for brawlstars"""
         await self.bot.type()
         user = ctx.message.author
         trosort = {}
@@ -652,16 +681,17 @@ class BrawlStats:
         server = user.server
         for member in server.members:
             try:
-                profiletag = await self.tags.getTag(member.id)
-                profiledata = self.brawl.get_player(profiletag)
-                trophies = profiledata.trophies
-                name = profiledata.name
+                if member.id in self.ldb:
+                    profiledata = self.ldb[member.id]
+                else:
+                    await self.update_profile(member)
+                    profiledata = self.ldb[member.id]
+                trophies = profiledata["trophies"]
+                name = profiledata["name"]
                 trosort[member.id] = trophies
                 troinfo[member.id] = {}
                 troinfo[member.id]["name"] = name
-                troinfo[member.id]["tag"] = profiledata.tag
-            except brawlstats.RequestError as e:
-                return await self.bot.say('```\n{}: {}\n```'.format(e.code, e.error))
+                troinfo[member.id]["tag"] = profiledata["tag"]
             except KeyError:
                 pass
         sername = server.name
@@ -721,7 +751,7 @@ class BrawlStats:
                 sno = "`{}.` ".format(rank)
                 rank += 1
                 tro = trosort[memid]
-                tromoji = self.getLeagueEmoji( tro )
+                tromoji = self.getLeagueEmoji(tro)
                 name = troinfo[memid]["name"]
                 tag = troinfo[memid]["tag"]
                 link = lnk + tag
@@ -757,10 +787,10 @@ class BrawlStats:
         elif member.id == author.id:
             allowed = True
         else:
-            botcommander_roles = [discord.utils.get(server.roles, name=r) for r in BOTCOMMANDER_ROLES]
-            botcommander_roles = set(botcommander_roles)
-            author_roles = set(author.roles)
-            if len(author_roles.intersection(botcommander_roles)):
+            mod_role = settings.get_server_mod(server).lower()
+            admin_role = settings.get_server_admin(server).lower()
+            role = discord.utils.find(lambda r: r.name.lower() in (mod_role, admin_role), author.roles)
+            if role is not None:
                 allowed = True
 
         if not allowed:
@@ -787,12 +817,301 @@ class BrawlStats:
         except brawlstats.RequestError:
             return await self.bot.say("Error: cannot reach Brawl Stars Servers. Please try again later.")
 
-    @bs.command()
+    @bs.group(pass_context=True, no_pm=True)
+    async def set(self, ctx):
+        """Setup And Manage This BS Cog."""
+        if ctx.command.qualified_name == "bs set":
+            await send_cmd_help(ctx)
+
+    @set.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(administrator=True)
-    async def settoken(self, *, key):
+    async def token(self, *, key):
         """Input your BrawlStars API Token"""
         await self.auth.addToken(key)
         await self.bot.say("BrawlAPI Token set")
+
+    @set.command(name="emoji", pass_context=True, no_pm=True)
+    @checks.mod_or_permissions(administrator=True)
+    async def _set_emoji(self, ctx):
+        """You can Setup The emojis For this COG by this command."""
+        check1, check2, check3 = False, False, False
+        for serv in self.bot.servers:
+            if serv.id == "581069387512020995":
+                check1 = True
+            if serv.id == "603177745823957012":
+                check2 = True
+            if serv.id == "572762862980825089":
+                check3 = True
+        if check1 and check2 and check3:
+            await self.auth.Emojiset(1)
+            return await self.bot.say("I am already set up. I am in the emoji server.")
+        fch = self.auth.getMethod()
+        if fch == 0:
+            pass
+        else:
+            return await self.bot.say("I am already set up. IF the cog is having any problem do {}bs set error".format(ctx.prefix))
+        user = ctx.message.author
+        server = user.server
+        servno = len(self.bot.servers)
+        if servno <= 7:
+            out = "You can Use This Option"
+        else:
+            out = "Your bot cannot make more servers so you cannot use this Option."
+        embed = discord.Embed(color=0xFAA61A, title="Emojis Setup Menu", description="Menu to Setup Emojis for thiis BS Cog.")
+        embed.set_footer(text=credits, icon_url=creditIcon)
+        embed.add_field(name=":one: Option 1", value="**You Can Join Our Server For The Emojis.\n"
+                                                     "The Emojis will be auto-updated.\n**"
+                                                     "(NOTE- You will have to give us our Bot Invite.\n"
+                                                     "`IT WIL NOT BE OUR RESPONSIBILITY IF YOUR BOT JOINS ANY SERVER YOU DIDN'T WANT IT TO.`)"
+                        , inline=False)
+        embed.add_field(name=":two: Option 2", value="**The Bot can create 3 servers and add all emojis there.\n"
+                                                     "The Emojis will be auto-updated every 24 hrs.\nYou can update these emojis manually also.**\n"
+                                                     "(NOTE- You bot must not be in more than 7 Servers.\n"
+                                                     "`YOUR BOT IS CURRENTLY IN {} SERVERS.`\n{})".format(str(servno), out)
+                        , inline=False)
+        embed.add_field(name=":three: Option 3", value="**You can create 3 servers yourself and bot will add all emojis there.\n"
+                                                       "The Emojis will be auto-updated every 24 hrs.\nYou can update these emojis manually also.**\n"
+                                                       "(Note- You must give bot perms to add emojis.\n"
+                                                       "`Add the bot in those 3 servers and then provide the 3 server IDs properly.`)"
+                        , inline=False)
+        embed.add_field(name="😁 Reaction", value="React with :one: to use Option 1.\n"
+                                                  "React with :two: to use Option 2.\n"
+                                                  "React with :three: to use Option 3.\n"
+                                                  "React with :x: to Cancel."
+                        , inline=False)
+        msg = await self.bot.say(embed=embed)
+        emojis = []
+        blo = chr(8419)
+        num = [49, 50, 51]
+        for n in num:
+            ie = chr(n)
+            emojis.append(ie + blo)
+        emojis.append("❌")
+        for emoji in emojis:
+            await self.bot.add_reaction(message=msg, emoji=emoji)
+        res = await self.bot.wait_for_reaction(emojis, user=user, timeout=90, message=msg)
+        if res is None:
+            return await self.bot.say("You took too long to react. Exiting Emoji Setup Process.")
+        react = res.reaction
+        recno = emojis.index(react.emoji) + 1
+        if recno == 4:
+            return await self.bot.say("Ok. Cancelling Emoji Setup Process.")
+        elif recno == 1:
+            return await self.bot.say("Ok. Join This Server- https://discord.gg/jQp52Ew ."
+                                      "```Rest Of the Steps Will be explained there.```")
+        elif recno == 2:
+            if servno > 7:
+                return await self.bot.say("Your bot is in more than 7 servers so you cannot use this option.")
+            await self.bot.say("The bot will Create 3 Servers and add all the emojis there.\n"
+                               "Type Cancel within 30 seconds to cancel. Else Bot will proceed.\n"
+                               "Type Yes TO proceed immediately.")
+
+            def check(mesg):
+                return mesg.content.lower == "cancel" or "yes"
+            reply = await self.bot.wait_for_message(author=user, check=check, timeout=30)
+            if reply is None:
+                pass
+            elif reply.content.lower == "cancel":
+                return await self.bot.say("Ok. Cancelling Emoji Setup Process.")
+            await self.bot.say("Ok Creating Servers...")
+            s1 = await self.bot.create_server(name="BS Emojis 1")
+            s2 = await self.bot.create_server(name="BS Emojis 2")
+            s3 = await self.bot.create_server(name="BS Emojis 3")
+            c1 = await self.bot.create_channel(s1, name="general")
+            inv1 = await self.bot.create_invite(c1)
+            await self.bot.say("Server 1 (BS Emojis 1) Invite - " + inv1.url)
+            c2 = await self.bot.create_channel(s2, name="general")
+            inv2 = await self.bot.create_invite(c2)
+            await self.bot.say("Server 2 (BS Emojis 2) Invite - " + inv2.url)
+            c3 = await self.bot.create_channel(s3, name="general")
+            inv3 = await self.bot.create_invite(c3)
+            await self.bot.say("Server 3 (BS Emojis 3) Invite - " + inv3.url)
+            self.clone()
+            toadd = dataIO.load_json("data/brawlstats/Emojis/emoji.json")
+            e1 = toadd[0]
+            for emo in e1:
+                h = emo.split(".")
+                ext = "." + h[-1]
+                nm = emo.replace(ext, "")
+                path = "data/brawlstats/Emojis/BS Emotes 1/" + emo
+                with open(path, "rb") as image:
+                    im = image.read()
+                    await self.bot.create_custom_emoji(s1, name=nm, image=im)
+            await self.bot.say("Server 1 setup complete.")
+            e2 = toadd[1]
+            for emo in e2:
+                h = emo.split(".")
+                ext = "." + h[-1]
+                nm = emo.replace(ext, "")
+                path = "data/brawlstats/Emojis/BS Emotes 2/" + emo
+                with open(path, "rb") as image:
+                    im = image.read()
+                    await self.bot.create_custom_emoji(s2, name=nm, image=im)
+            await self.bot.say("Server 2 setup complete.")
+            e3 = toadd[2]
+            for emo in e3:
+                h = emo.split(".")
+                ext = "." + h[-1]
+                nm = emo.replace(ext, "")
+                path = "data/brawlstats/Emojis/BS Emotes 3/" + emo
+                with open(path, "rb") as image:
+                    im = image.read()
+                    await self.bot.create_custom_emoji(s3, name=nm, image=im)
+            await self.bot.say("Server 3 setup complete.")
+            await self.auth.Servset(1, s1.id)
+            await self.auth.Servset(2, s2.id)
+            await self.auth.Servset(3, s3.id)
+            await self.bot.say("Emojis have been setup. You can now use the bs cog properly.")
+        elif recno == 3:
+            botid = self.bot.user.id
+            await self.bot.say("Add the bot the 1st server and then send The Server ID.")
+            reply1 = await self.bot.wait_for_message(author=user, timeout=90)
+            if reply1 is None:
+               return await self.bot.say("You took too long to answer. Cancelling process.")
+            if reply1.content.isnumeric():
+                servid = reply1.content
+                ch1 = False
+                for servers in self.bot.servers:
+                    if servers.id == servid:
+                        botinserv = servers.get_member(botid)
+                        if len(servers.emojis) > 0:
+                            return await self.bot.say("That server already has some emojis.")
+                        perms = botinserv.server_permissions
+                        if perms.administrator or perms.manage_emojis or servers.owner.id == botid:
+                            s1 = servers
+                            ch1 = True
+                            break
+                        else:
+                            return await self.bot.say("I dont have permissions to add emojis in that server.")
+                if ch1:
+                    pass
+                else:
+                    return await self.bot.say("Either the Server Id is invalid or I am not in that server.")
+            else:
+                return await self.bot.say("The Server ID is invalid.")
+            await self.bot.say("Add the bot the 2nd server and then send The Server ID.")
+            reply2 = await self.bot.wait_for_message(author=user, timeout=90)
+            if reply2 is None:
+                return await self.bot.say("You took too long to answer. Cancelling process.")
+            if reply2.content.isnumeric():
+                servid = reply2.content
+                ch2 = False
+                for servers in self.bot.servers:
+                    if servers.id == servid:
+                        botinserv = servers.get_member(botid)
+                        if len(servers.emojis) > 0:
+                            return await self.bot.say("That server already has some emojis.")
+                        perms = botinserv.server_permissions
+                        if perms.administrator or perms.manage_emojis or servers.owner.id == botid:
+                            s2 = servers
+                            ch2 = True
+                        else:
+                            return await self.bot.say("I dont have permissions to add emojis in that server.")
+                if ch2:
+                    pass
+                else:
+                    return await self.bot.say("Either the Server Id is invalid or I am not in that server.")
+            else:
+                return await self.bot.say("The Server ID is invalid.")
+            await self.bot.say("Add the bot the 3rd server and then send The Server ID.")
+            reply3 = await self.bot.wait_for_message(author=user, timeout=90)
+            if reply3 is None:
+                return await self.bot.say("You took too long to answer. Cancelling process.")
+            if reply3.content.isnumeric():
+                servid = reply3.content
+                ch3 = False
+                for servers in self.bot.servers:
+                    if servers.id == servid:
+                        botinserv = servers.get_member(botid)
+                        if len(servers.emojis) > 0:
+                            return await self.bot.say("That server already has some emojis.")
+                        perms = botinserv.server_permissions
+                        if perms.administrator or perms.manage_emojis or servers.owner.id == botid:
+                            s3 = servers
+                            ch3 = True
+                        else:
+                            return await self.bot.say("I dont have permissions to add emojis in that server.")
+                if ch3:
+                    pass
+                else:
+                    return await self.bot.say("Either the Server Id is invalid or I am not in that server.")
+            else:
+                return await self.bot.say("The Server ID is invalid.")
+            self.clone()
+            toadd = dataIO.load_json("data/brawlstats/Emojis/emoji.json")
+            e1 = toadd[0]
+            for emo in e1:
+                h = emo.split(".")
+                ext = "." + h[-1]
+                nm = emo.replace(ext, "")
+                path = "data/brawlstats/Emojis/BS Emotes 1/" + emo
+                with open(path, "rb") as image:
+                    im = image.read()
+                    await self.bot.create_custom_emoji(s1, name=nm, image=im)
+            await self.bot.say("Server 1 setup complete.")
+            e2 = toadd[1]
+            for emo in e2:
+                h = emo.split(".")
+                ext = "." + h[-1]
+                nm = emo.replace(ext, "")
+                path = "data/brawlstats/Emojis/BS Emotes 2/" + emo
+                with open(path, "rb") as image:
+                    im = image.read()
+                    await self.bot.create_custom_emoji(s2, name=nm, image=im)
+            await self.bot.say("Server 2 setup complete.")
+            e3 = toadd[2]
+            for emo in e3:
+                h = emo.split(".")
+                ext = "." + h[-1]
+                nm = emo.replace(ext, "")
+                path = "data/brawlstats/Emojis/BS Emotes 3/" + emo
+                with open(path, "rb") as image:
+                    im = image.read()
+                    await self.bot.create_custom_emoji(s3, name=nm, image=im)
+            await self.bot.say("Server 3 setup complete.")
+            await self.auth.Servset(1, s1.id)
+            await self.auth.Servset(2, s2.id)
+            await self.auth.Servset(3, s3.id)
+            await self.bot.say("Emojis have been setup. You can now use the bs cog properly.")
+
+    @set.command(pass_context=True, no_pm=True)
+    @checks.mod_or_permissions(administrator=True)
+    async def error(self, ctx):
+        """Command for handling any sort of error in bs set emoji.(WIP)"""
+        user = ctx.message.author
+        check1, check2, check3 = False, False, False
+        for serv in self.bot.servers:
+            if serv.id == "581069387512020995":
+                check1 = True
+            if serv.id == "603177745823957012":
+                check2 = True
+            if serv.id == "572762862980825089":
+                check3 = True
+        if check1 and check2 and check3:
+            await self.auth.Emojiset(1)
+            return await self.bot.say("I am in the emoji servers. If there is any problem Send it here- https://discord.gg/jQp52Ew <#607476781867466764>")
+        fch = self.auth.getMethod()
+        if fch == 0:
+            msg = await self.bot.say("First Setup the Emojis using `{}bs set emoji`. If you have set up the emojis already and then facing problems react with ✅.".format(ctx.prefix))
+            await self.bot.add_reaction(message=msg, emoji="✅")
+            res = await self.bot.wait_for_reaction("✅", user=user, timeout=90, message=msg)
+            if res is None:
+                return
+            else:
+                pass
+        embed = discord.Embed(color=0xFAA61A, title="Emojis Error Menu", description="Menu to Handle Error in set emoji for thiis BS Cog.")
+        embed.set_footer(text=credits, icon_url=creditIcon)
+        embed.add_field(name=":one: Option 1", value="Emojis are not auto updating. You also manually update emojis using this method.\n"
+                                                     "(Emojis in your bot are updated every week but we may be late to update them.)"
+                        , inline=False)
+        embed.add_field(name=":two: Option 2", value="The emoji servers Got deleted.", inline=False)
+        embed.add_field(name=":three: Option 3", value="", inline=False)
+        embed.add_field(name="😁 Reaction", value="React with :one: to use Option 1.\n"
+                                                  "React with :two: to use Option 2.\n"
+                                                  "React with :three: to use Option 3.\n"
+                                                  "React with :x: to Cancel."
+                        , inline=False)
+        msg = await self.bot.say(embed=embed)
 
     @commands.group(pass_context=True, no_pm=True)
     async def brawllinkset(self, ctx):
@@ -867,11 +1186,93 @@ class BrawlStats:
                 if char == 8:
                     if tag_raw.isalnum():
                         if tag_raw.isupper():
-                            asyncio.sleep(0.5)
                             await self.bot.delete_message(message)
                             embed = discord.Embed(title=title, url=link, description=tag, color=0xff0000)
                             embed.set_footer(text=user, icon_url=icon)
                             await self.bot.send_message(channel, embed=embed)
+
+    async def update_ldb(self):
+        while self is self.bot.get_cog("BrawlStats"):
+            start = time.time()
+            for server in self.bot.servers:
+                await self.update_server_ldb(server)
+            end = time.time()
+            if (end - start) >= 3600:
+                wait = 0
+            else:
+                wait = 3600 - (end - start)
+            await asyncio.sleep(wait)
+
+    async def update_server_ldb(self, server):
+        for member in server.members:
+            await self.update_profile(member)
+            await asyncio.sleep(0.4)
+
+    async def update_profile(self, member):
+        try:
+            profiletag = await self.tags.getTag(member.id)
+            profiledata = self.brawl.get_player(profiletag)
+            trophies = profiledata.trophies
+            name = profiledata.name
+            tag = profiledata.tag
+            pdata = {"name": name,
+                     "tag": tag,
+                     "trophies": trophies}
+            self.ldb[member.id] = pdata
+            self.save_system()
+        except KeyError:
+            pass
+        except brawlstats.RateLimitError:
+            await asyncio.sleep(0.4)
+            await self.update_profile(member)
+        except brawlstats.MaintenanceError or brawlstats.ServerError:
+            return
+
+    async def update_profile_withdata(self, member, profiledata):
+        trophies = profiledata.trophies
+        name = profiledata.name
+        tag = profiledata.tag
+        pdata = {"name": name,
+                 "tag": tag,
+                 "trophies": trophies}
+        self.ldb[member.id] = pdata
+        self.save_system()
+
+    def save_system(self):
+        dataIO.save_json('data/brawlstats/ldb.json', self.ldb)
+
+    def clone(self):
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        rlpath = os.getcwd()
+        path = str(dir_path).replace("\\cogs", "") + "\\data\\brawlstats"
+        os.chdir(path)
+        os.system("git clone https://github.com/Weirdo914/Emojis.git")
+        os.chdir(rlpath)
+
+    def delclone(self):
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        rlpath = os.getcwd()
+        path = str(dir_path).replace("\\cogs", "") + "\\data\\brawlstats"
+        os.chdir(path)
+        try:
+            os.rmdir("Emojis")
+        except:
+            pass
+        os.chdir(rlpath)
+        self.clone()
+
+    def update(self):
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        rlpath = os.getcwd()
+        path = str(dir_path).replace("\\cogs", "") + "\\data\\brawlstats\\Emojis"
+        os.chdir(path)
+        os.system("git fetch && git pull")
+        os.chdir(rlpath)
+
+    async def update_emojis(self):
+        while self is self.bot.get_cog("BrawlStats"):
+            self.update()
+            await asyncio.sleep(86400)
 
 
 def check_folder():
@@ -886,7 +1287,11 @@ def check_file():
 
     if not fileIO(auth_path, "check"):
         print("enter your BrawlAPI token in data/brawlstats/auth.json...")
-        fileIO(auth_path, "save", {"Token": "enter your BrawlAPI token here!"})
+        fileIO(auth_path, "save", {"Token": "enter your BrawlAPI token here!",
+                                   "Emoji": 0,
+                                   "s1": None,
+                                   "s2": None,
+                                   "s3": None})
 
     f = 'data/brawlstats/settings.json'
     if dataIO.is_valid_json(f) is False:
@@ -1407,6 +1812,10 @@ def check_file():
         }
         dataIO.save_json(f, maps)
 
+    f = 'data/brawlstats/ldb.json'
+    if dataIO.is_valid_json(f) is False:
+        dataIO.save_json(f, {})
+
 
 def check_auth():
     c = dataIO.load_json(auth_path)
@@ -1419,5 +1828,10 @@ def setup(bot):
     check_folder()
     check_file()
     n = BrawlStats(bot)
+    loop = asyncio.get_event_loop()
+    loop.create_task(n.update_ldb())
+    if auth(auth_path).getMethod() > 1:
+        loop2 = asyncio.get_event_loop()
+        loop2.create_task(n.update_emojis())
     bot.add_cog(n)
     bot.add_listener(n._new_message, 'on_message')
