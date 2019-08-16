@@ -827,7 +827,7 @@ class BrawlStats:
     @checks.mod_or_permissions(administrator=True)
     async def token(self, key: str):
         """Input your BrawlStars API Token"""
-        await self.auth.addToken(key)
+        await self.auth.addToken(str(key))
         await self.bot.say("BrawlAPI Token set -\n" + key)
 
     @set.command(name="emoji", pass_context=True, no_pm=True)
