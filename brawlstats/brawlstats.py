@@ -825,7 +825,7 @@ class BrawlStats:
 
     @set.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(administrator=True)
-    async def token(self, key):
+    async def token(self, key: str):
         """Input your BrawlStars API Token"""
         await self.auth.addToken(key)
         await self.bot.say("BrawlAPI Token set -\n" + key)
