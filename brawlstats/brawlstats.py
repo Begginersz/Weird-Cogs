@@ -116,6 +116,9 @@ class BrawlStats:
         self.ldb = dataIO.load_json("data/brawlstats/ldb.json")
         self.brawl = brawlstats.Client(self.auth.getToken(), is_async=False)
 
+    def update(self):
+        self.brawl = brawlstats.Client(self.auth.getToken(), is_async=False)
+
     def emoji(self, name):
         """Emoji by name."""
         for emoji in self.bot.get_all_emojis():
@@ -329,12 +332,6 @@ class BrawlStats:
             emoji = str(avaid)
         return emoji
 
-    @commands.command(pass_context=True)
-    async def emcheck(self, ctx, emoji: str):
-        await self.bot.say("hi")
-        emo = self.emoji(emoji)
-        await self.bot.say(emo)
-
     @commands.group(pass_context=True, no_pm=True)
     async def bs(self, ctx):
         """Brawl Stars Commands"""
@@ -344,6 +341,9 @@ class BrawlStats:
     @bs.command(pass_context=True, aliases=['brawlprofile'])
     async def profile(self, ctx, member: discord.Member = None):
         """View your Brawl Stars Profile Data and Statstics."""
+        if self.auth.getToken() is None:
+            return await self.bot.say("The brawlAPI token has not been set.\nGet it from- https://brawlapi.cf/dashboard"
+                                      "\nSet it using {}bs set token".format(ctx.prefix))
 
         member = member or ctx.message.author
 
@@ -381,6 +381,9 @@ class BrawlStats:
     @bs.command(pass_context=True)
     async def club(self, ctx, member: discord.Member = None):
         """View your Brawl Stars Club statistics and information"""
+        if self.auth.getToken() is None:
+            return await self.bot.say("The brawlAPI token has not been set.\nGet it from- https://brawlapi.cf/dashboard"
+                                      "\nSet it using {}bs set token".format(ctx.prefix))
 
         member = member or ctx.message.author
 
@@ -433,8 +436,12 @@ class BrawlStats:
         await self.bot.say(embed=embed)
 
     @bs.command(pass_context=True)
-    async def events(self):
+    async def events(self, ctx):
         """Gives List of Current and upcoming events"""
+        if self.auth.getToken() is None:
+            return await self.bot.say("The brawlAPI token has not been set.\nGet it from- https://brawlapi.cf/dashboard"
+                                      "\nSet it using {}bs set token".format(ctx.prefix))
+
         await self.bot.type()
         image = "https://cdn.discordapp.com/avatars/517368847322447873/df58e404ffe235c686fe8008b29c2c34.png"
         try:
@@ -463,13 +470,14 @@ class BrawlStats:
             up = ""
             for coming in upcomingevents:
                 if coming.slot == eventid:
-                    upeventmap = coming.map_name
-                    upmode = coming.game_mode
-                    modeemoji = upmode.replace(" ", "")
-                    upemoji = self.emoji(modeemoji)
-                    emo = self.emoji("next")
-                    updes = emo + " " + upemoji + " " + upmode + " (" + upeventmap + ")"
-                    up = up + updes
+                    if coming.map_name is not None:
+                        upeventmap = coming.map_name
+                        upmode = coming.game_mode
+                        modeemoji = upmode.replace(" ", "")
+                        upemoji = self.emoji(modeemoji)
+                        emo = self.emoji("next")
+                        updes = emo + " " + upemoji + " " + upmode + " (" + upeventmap + ")"
+                        up = up + updes
             timedes = finemoji + " " + time
             if up == "":
                 des = timedes + "\n\u200b"
@@ -496,6 +504,9 @@ class BrawlStats:
     @bs.command(pass_context=True, aliases=['brawler'])
     async def brawlers(self, ctx, member: discord.Member = None):
         """Gives List of Your Brawlers with their rank and power"""
+        if self.auth.getToken() is None:
+            return await self.bot.say("The brawlAPI token has not been set.\nGet it from- https://brawlapi.cf/dashboard"
+                                      "\nSet it using {}bs set token".format(ctx.prefix))
 
         member = member or ctx.message.author
 
@@ -574,6 +585,9 @@ class BrawlStats:
     @bs.command(pass_context=True)
     async def members(self, ctx, member: discord.Member = None):
         """Gives List of Your Club Members"""
+        if self.auth.getToken() is None:
+            return await self.bot.say("The brawlAPI token has not been set.\nGet it from- https://brawlapi.cf/dashboard"
+                                      "\nSet it using {}bs set token".format(ctx.prefix))
 
         member = member or ctx.message.author
 
@@ -674,6 +688,10 @@ class BrawlStats:
     @bs.command(pass_context=True)
     async def leaderboard(self, ctx):
         """Shows server leaderboard for brawlstars"""
+        if self.auth.getToken() is None:
+            return await self.bot.say("The brawlAPI token has not been set.\nGet it from- https://brawlapi.cf/dashboard"
+                                      "\nSet it using {}bs set token".format(ctx.prefix))
+
         await self.bot.type()
         user = ctx.message.author
         trosort = {}
@@ -826,9 +844,18 @@ class BrawlStats:
     @set.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(administrator=True)
     async def token(self, ctx, key: str):
-        """Input your BrawlStars API Token"""
+        """Input your BrawlStars API Token. Get it from brawlapi.cf"""
+        key = str(key)
+        brawlcheck = brawlstats.Client(key, is_async=False)
+        try:
+            brawlcheck.get_events()
+        except brawlstats.ServerError or brawlstats.MaintenanceError or brawlstats.UnexpectedError:
+            return await self.bot.say("BrawlAPI Server is down. Try again later.")
+        except brawlstats.Unauthorized:
+            return await self.bot.say("The TOKEN- ```{}``` you entered is invalid.".format(key))
         await self.auth.addToken(str(key))
-        await self.bot.say("BrawlAPI Token set -\n" + key)
+        await self.bot.say("BrawlAPI Token set -\n```" + key + "```")
+        self.update()
 
     @set.command(name="emoji", pass_context=True, no_pm=True)
     @checks.mod_or_permissions(administrator=True)
@@ -1287,7 +1314,7 @@ def check_file():
 
     if not fileIO(auth_path, "check"):
         print("enter your BrawlAPI token in data/brawlstats/auth.json...")
-        fileIO(auth_path, "save", {"Token": "enter your BrawlAPI token here!",
+        fileIO(auth_path, "save", {"Token": None,
                                    "Emoji": 0,
                                    "s1": None,
                                    "s2": None,
