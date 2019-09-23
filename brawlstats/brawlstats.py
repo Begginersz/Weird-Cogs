@@ -1355,7 +1355,7 @@ def setup(bot):
     n = BrawlStats(bot)
     loop = asyncio.get_event_loop()
     loop.create_task(n.update_ldb())
-    if auth(auth_path).getMethod() > 1:
+    if Auth(auth_path).getMethod() > 1:
         loop2 = asyncio.get_event_loop()
         loop2.create_task(n.update_emojis())
     bot.add_cog(n)
