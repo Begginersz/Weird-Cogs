@@ -686,7 +686,7 @@ class BrawlStats:
                          url=namelink)
         count = 0
         recom = ""
-        for brawler in res["brawlers"]:
+        for brawler in data["brawlers"]:
             count += 1
             emo = self.emoji(brawler)
             if count % 3 == 0:
