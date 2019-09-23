@@ -667,7 +667,7 @@ class BrawlStats:
             await session.close()
             res = await r.json()
         if not res["success"]:
-            if res["error"] == ("Map Not Found" or "No Map Specified"):
+            if res["error"] in ("Map Not Found", "No Map Specified"):
                 notfoundembed = discord.Embed(color=0xFAA61A,
                                               description="Map `{}` could not be found.".format(mapname))
                 return await self.bot.say(embed=notfoundembed)
