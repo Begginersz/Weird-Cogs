@@ -676,7 +676,7 @@ class BrawlStats:
                                            description="An Unexpected error occurred. Please try again later".format(mapname))
                 return await self.bot.say(embed=errorembed)
         data = res["data"]
-        mapname = res["map"]
+        mapname = data["map"]
         modelink = data["mode"]
         namelink = data["pagelink"]
         link = data["maplink"]
