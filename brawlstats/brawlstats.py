@@ -113,7 +113,7 @@ class BrawlStats:
         self.auth = Auth(auth_path)
         self.tags = tags(tags_path)
         self.ldb = dataIO.load_json("data/brawlstats/ldb.json")
-        self.brawl = brawlstats.Client(self.auth.getToken(), is_async=False)
+        self.brawl = brawlstats.BrawlAPI(self.auth.getToken(), is_async=False)
 
     def update(self):
         self.brawl = brawlstats.Client(self.auth.getToken(), is_async=False)
