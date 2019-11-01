@@ -116,7 +116,7 @@ class BrawlStats:
         self.brawl = brawlstats.BrawlAPI(self.auth.getToken(), is_async=False)
 
     def update(self):
-        self.brawl = brawlstats.Client(self.auth.getToken(), is_async=False)
+        self.brawl = brawlstats.BrawlAPI(self.auth.getToken(), is_async=False)
 
     def emoji(self, name):
         """Emoji by name."""
@@ -859,7 +859,7 @@ class BrawlStats:
     async def token(self, ctx, key: str):
         """Input your BrawlStars API Token. Get it from brawlapi.cf"""
         key = str(key)
-        brawlcheck = brawlstats.Client(key, is_async=False)
+        brawlcheck = brawlstats.BrawlAPI(key, is_async=False)
         try:
             brawlcheck.get_events()
         except brawlstats.ServerError or brawlstats.MaintenanceError or brawlstats.UnexpectedError:
