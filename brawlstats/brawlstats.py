@@ -113,10 +113,10 @@ class BrawlStats:
         self.auth = Auth(auth_path)
         self.tags = tags(tags_path)
         self.ldb = dataIO.load_json("data/brawlstats/ldb.json")
-        self.brawl = brawlstats.BrawlAPI(self.auth.getToken(), is_async=False)
+        self.brawl = brawlstats.OfficialAPI(self.auth.getToken(), is_async=False)
 
     def update(self):
-        self.brawl = brawlstats.BrawlAPI(self.auth.getToken(), is_async=False)
+        self.brawl = brawlstats.OfficialAPI(self.auth.getToken(), is_async=False)
 
     def emoji(self, name):
         """Emoji by name."""
